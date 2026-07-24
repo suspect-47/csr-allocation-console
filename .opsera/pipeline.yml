@@ -1,0 +1,65 @@
+# Opsera owns the gate; Render owns the runtime (spec §1, §6).
+# Stages run in order; a failure stops the pipeline. The deploy trigger is the
+# ONLY thing that tells Render to deploy — every Render service has
+# autoDeploy: false. Do NOT enable VIBEshift steady-state deploys; it would
+# provision its own infrastructure and duplicate the Render services.
+
+pipeline:
+  name: csr-allocation-console
+  trigger:
+    branch: main
+    on: push
+
+  stages:
+    - name: lint-and-typecheck
+      image: python:3.11-slim
+      commands:
+        - pip install -r requirements.txt
+        - ruff check app tests scripts
+        - mypy app
+
+    - name: unit-tests
+      image: python:3.11-slim
+      commands:
+        - pip install -r requirements.txt
+        - pytest -q
+
+    - name: web-build
+      # Next.js UI + /api route handlers. tsc strict runs inside next build.
+      image: node:20-slim
+      commands:
+        - cd web && npm install
+        - npm run typecheck
+        - npm run build
+
+    - name: appsec-scan
+      # Secret detection matters most here — the repo touches three API keys
+      # (spec §6). Fail the build if a key is committed.
+      image: python:3.11-slim
+      commands:
+        - pip install detect-secrets
+        - detect-secrets scan --all-files > .secrets.report.json
+        - >-
+          python -c "import json,sys;
+          d=json.load(open('.secrets.report.json'));
+          n=sum(len(v) for v in d.get('results',{}).values());
+          print('potential secrets:', n);
+          sys.exit(1 if n else 0)"
+
+    - name: agent-eval-gate
+      # Deterministic — replays recorded captures, never the network (spec §6).
+      # Red until tests/fixtures/captures/ is populated by record_fixtures.
+      image: python:3.11-slim
+      commands:
+        - pip install -r requirements.txt
+        - python -m scripts.eval_gate
+
+    - name: deploy-trigger
+      # Final step only. Calls the Render deploy hook; nothing else provisions.
+      image: curlimages/curl:latest
+      when: on_success
+      commands:
+        - 'curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"'
+
+  secrets:
+    - RENDER_DEPLOY_HOOK_URL   # from Opsera secret store, never in the repo

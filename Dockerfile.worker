@@ -1,0 +1,16 @@
+# Python worker + cron image (spec §1). Runs the CrewAI flow. The same image
+# serves both services; the command differs (see render.yaml / docker-compose).
+
+FROM python:3.11-slim
+WORKDIR /srv
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app/ ./app/
+COPY scripts/ ./scripts/
+COPY migrations/ ./migrations/
+
+# Default is the worker; cron overrides the command.
+CMD ["python", "-m", "app.worker"]

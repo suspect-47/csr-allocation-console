@@ -1,0 +1,20 @@
+# Next.js web service (React UI + /api route handlers). Standalone output for a
+# slim runtime image. Serves the SPA and the read/enqueue API — it never runs a
+# crew (spec §1); it enqueues jobs the Python worker executes.
+
+FROM node:20-slim AS build
+WORKDIR /app
+COPY web/package.json web/package-lock.json* ./
+RUN npm install
+COPY web/ ./
+RUN npm run build
+
+FROM node:20-slim AS run
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=8000
+COPY --from=build /app/public ./public
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+EXPOSE 8000
+CMD ["node", "server.js"]

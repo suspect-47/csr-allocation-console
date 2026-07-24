@@ -1,0 +1,78 @@
+# Local mirror of the Render topology.
+#   web    — Next.js (React UI + /api route handlers)
+#   worker — Python CrewAI flow executor
+#   cron   — Python discovery enqueuer (one-shot: `docker compose run --rm cron`)
+#   migrate— one-shot schema apply that web/worker wait on
+# `docker compose up --build` boots web + worker + db + kv.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: csr
+      POSTGRES_PASSWORD: csr
+      POSTGRES_DB: causes
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U csr -d causes"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  kv:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory-policy", "noeviction"]
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: { context: ., dockerfile: Dockerfile.worker }
+    command: python -m scripts.migrate
+    environment:
+      DATABASE_URL: postgresql://csr:csr@db:5432/causes
+    depends_on:
+      db: { condition: service_healthy }
+
+  web:
+    build: { context: ., dockerfile: Dockerfile.web }
+    environment:
+      DATABASE_URL: postgresql://csr:csr@db:5432/causes
+      KV_URL: redis://kv:6379/0
+    ports: ["8000:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+      kv: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: { context: ., dockerfile: Dockerfile.worker }
+    command: python -m app.worker
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql://csr:csr@db:5432/causes
+      KV_URL: redis://kv:6379/0
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      db: { condition: service_healthy }
+      kv: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  cron:
+    build: { context: ., dockerfile: Dockerfile.worker }
+    command: python -m app.cron
+    environment:
+      DATABASE_URL: postgresql://csr:csr@db:5432/causes
+      KV_URL: redis://kv:6379/0
+    env_file:
+      - path: .env
+        required: false
+    depends_on:
+      db: { condition: service_healthy }
+      kv: { condition: service_healthy }
+    profiles: ["manual"]

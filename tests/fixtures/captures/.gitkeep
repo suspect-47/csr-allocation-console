@@ -1,0 +1,3 @@
+# Real you.com Research captures land here (captures/<record_id>.json),
+# produced by `python -m scripts.record_fixtures` against live keys.
+# Empty on purpose — the eval gate is red until these exist (spec §6).

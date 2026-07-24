@@ -1,0 +1,16 @@
+# Pinned intentionally — do NOT float (spec §1 "pin the CrewAI version", §2).
+# Confirm exact patch versions against your package index before first install.
+crewai==0.140.0
+pydantic==2.10.4
+httpx==0.28.1
+psycopg[binary,pool]==3.2.3
+redis==5.2.1              # Render Key Value speaks the Redis/Valkey protocol
+python-dotenv==1.0.1
+tenacity==9.0.0           # retry/backoff on you.com calls
+rapidfuzz==3.11.0         # fuzzy org_name dedupe in Scout
+
+# dev / CI
+ruff==0.8.6
+mypy==1.14.1
+pytest==8.3.4
+pytest-asyncio==0.25.0

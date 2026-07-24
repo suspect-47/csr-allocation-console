@@ -1,0 +1,71 @@
+# Render owns the runtime; Opsera owns the gate (spec §1, §7).
+# autoDeploy: false on EVERY service. Deploys happen only via the Render deploy
+# hook, called as the final Opsera stage. Nothing else provisions infra — do not
+# enable Opsera VIBEshift.
+#
+# web = Next.js (React UI + /api). worker + cron = Python (CrewAI flow).
+
+services:
+  - type: web
+    name: console
+    runtime: docker
+    dockerfilePath: ./Dockerfile.web
+    autoDeploy: false
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: causes-db
+          property: connectionString
+      - key: KV_URL
+        fromService:
+          type: keyvalue
+          name: causes-kv
+          property: connectionString
+
+  - type: worker
+    name: flow-runner
+    runtime: docker
+    dockerfilePath: ./Dockerfile.worker
+    autoDeploy: false
+    dockerCommand: python -m app.worker
+    preDeployCommand: python -m scripts.migrate   # worker also migrates at startup (idempotent)
+    envVars:
+      - fromGroup: csr-secrets            # YOU_* + ANTHROPIC_API_KEY (dashboard only)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: causes-db
+          property: connectionString
+      - key: KV_URL
+        fromService:
+          type: keyvalue
+          name: causes-kv
+          property: connectionString
+
+  - type: cron
+    name: discovery
+    runtime: docker
+    dockerfilePath: ./Dockerfile.worker
+    schedule: "*/30 * * * *"
+    autoDeploy: false
+    dockerCommand: python -m app.cron
+    envVars:
+      - fromGroup: csr-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: causes-db
+          property: connectionString
+      - key: KV_URL
+        fromService:
+          type: keyvalue
+          name: causes-kv
+          property: connectionString
+
+  - type: keyvalue
+    name: causes-kv
+    plan: free
+    maxmemoryPolicy: noeviction
+
+databases:
+  - name: causes-db
+    plan: free
