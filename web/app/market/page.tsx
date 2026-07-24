@@ -328,10 +328,10 @@ function HeroCause({ c, reduce, onFund }: { c: Card; reduce: boolean; onFund: (c
   );
 }
 
-type Variant = "photo" | "photo-wide" | "bold-dark" | "bold-emerald";
+type Variant = "photo" | "photo-wide" | "bold-dark" | "bold-emerald" | "bold-amber" | "bold-violet";
 const CARD_PATTERN: Variant[] = [
-  "photo-wide", "photo", "bold-dark", "photo", "bold-emerald", "photo",
-  "photo", "photo-wide", "bold-dark", "photo", "bold-emerald", "photo",
+  "photo-wide", "photo", "bold-emerald", "photo", "bold-dark", "photo", "photo",
+  "photo-wide", "bold-amber", "photo", "bold-violet", "photo", "bold-dark", "photo",
 ];
 
 function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boolean; onFund: (c: Card, a: number) => void }) {
@@ -345,8 +345,8 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
     ...(reduce ? {} : { whileHover: { y: -5 } }),
   };
 
-  if (v === "bold-dark" || v === "bold-emerald") {
-    const tone = v === "bold-dark" ? "dark" : "emerald";
+  if (v.startsWith("bold-")) {
+    const tone = v.slice(5);
     return (
       <motion.article className={`mk-card mk-card--bold mk-card--${tone}`} {...mo}>
         <div className="mk-bold">
@@ -387,13 +387,23 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
         </div>
       </div>
       <div className="mk-info">
-        <div className="t">{c.headline}</div>
-        <div className="d">{c.blurb || c.summary}</div>
+        <p className="mk-info-text">{c.verified ? c.headline : (c.blurb || c.summary)}</p>
         {c.verified && <div className="mk-mom"><motion.i initial={{ width: 0 }} animate={{ width: `${c.momentum}%` }} transition={{ duration: .8 }} style={{ display: "block", height: "100%", borderRadius: 5, background: "linear-gradient(90deg,var(--impact),var(--gold))" }} /></div>}
-        <div className="mk-row"><span className="bk num">{fmt(c.backers)} backers</span><Link href={`/market/causes/${c.id}`} style={{ fontSize: 11, color: "var(--ink-dim)" }}>Details →</Link></div>
-        <div className="mk-row" style={{ marginTop: 8 }}>
-          <span className="pr num">{c.impact?.is_stated && c.impact.unit_cost ? <>{money(c.impact.unit_cost)} <small>{c.impact.unit_label}</small></> : <small className="faint">Any amount</small>}</span>
-          <button className="mk-fund" onClick={() => onFund(c, suggested(c))}>Fund</button>
+        <div className="mk-info-bottom">
+          <div className="mk-info-meta">
+            <span className="mk-meta"><b className="num">{fmt(c.backers)}</b> backers</span>
+            <span className="mk-meta-dot" />
+            {c.verified
+              ? <span className="mk-meta mk-meta--ok">✓ {c.passed}/6 verified</span>
+              : <span className="mk-meta mk-meta--list">◇ Listed</span>}
+          </div>
+          <div className="mk-info-foot">
+            <span className="mk-price2">{c.impact?.is_stated && c.impact.unit_cost ? <><b className="num">{money(c.impact.unit_cost)}</b> <small>{c.impact.unit_label}</small></> : <small className="faint">Any amount</small>}</span>
+            <div className="mk-info-actions">
+              <Link href={`/market/causes/${c.id}`} className="mk-detailbtn" aria-label={`Details for ${c.org_name}`}>↗</Link>
+              <button className="mk-fund" onClick={() => onFund(c, suggested(c))}>Fund</button>
+            </div>
+          </div>
         </div>
       </div>
     </motion.article>
