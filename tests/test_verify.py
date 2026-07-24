@@ -72,6 +72,20 @@ def test_contradiction_passes_when_clean_with_source() -> None:
     assert verify._check_contradiction(_cand(), r).result == CheckOutcome.passed
 
 
+def test_contradiction_ignores_negated_keywords() -> None:
+    # The adversarial prompt makes clean answers echo "fraud/scam" — must not block.
+    r = ResearchResult(
+        answer="No evidence of fraud or scam was found. The charity is reputable and in good standing.",
+        citations=[Citation(url="https://news.org/a")])
+    assert verify._check_contradiction(_cand(), r).result == CheckOutcome.passed
+
+
+def test_contradiction_flags_unnegated_wrongdoing() -> None:
+    r = ResearchResult(answer="The founder was convicted of embezzlement in 2023.",
+                       citations=[Citation(url="https://ag.gov/x")])
+    assert verify._check_contradiction(_cand(), r).result == CheckOutcome.failed
+
+
 def test_recency_within_window_passes() -> None:
     recent = (datetime.now(UTC) - timedelta(days=5)).strftime("%Y-%m-%d")
     r = ResearchResult(answer=f"The appeal was published {recent}.",

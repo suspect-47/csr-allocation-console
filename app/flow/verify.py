@@ -46,22 +46,19 @@ REGISTRY_DOMAINS = frozenset(
     }
 )
 
-ADVERSE_KEYWORDS = (
-    "fraud",
-    "scam",
-    "embezzle",
-    "misappropriat",
-    "lawsuit",
-    "indict",
-    "convicted",
-    "revoked",
-    "deregistered",
-    "regulatory complaint",
-    "ftc complaint",
-    "deceptive",
-    "ponzi",
-    "money laundering",
+# Strong signals: a single un-negated mention is disqualifying. Weak signals
+# (a lone lawsuit or investigation) are common even for reputable orgs and often
+# concern a former employee or the sector, so they only block in the plural.
+_ADVERSE_STRONG = (
+    "fraud", "scam", "embezzle", "misappropriat", "indicted", "convicted",
+    "revoked", "deregistered", "ponzi", "money laundering", "sanctioned",
+    "misused donations", "misused funds",
 )
+_ADVERSE_WEAK = (
+    "lawsuit", "regulatory complaint", "ftc complaint", "deceptive",
+    "investigation", "misconduct", "controversy", "criticized",
+)
+ADVERSE_KEYWORDS = _ADVERSE_STRONG + _ADVERSE_WEAK  # kept for reference
 
 _NEGATION = ("does not exist", "no evidence", "could not find", "no such organization", "unable to find")
 
@@ -209,11 +206,37 @@ def _check_solicitation(cand: Candidate, r: ResearchResult) -> CheckResult:
                        excerpt=_excerpt(r.answer))
 
 
+# Negation cues: the adversarial prompt ("search for fraud, scam, lawsuit…")
+# makes a clean answer echo those very words ("no evidence of fraud"). Only an
+# adverse keyword that is NOT negated in its sentence counts as a real signal.
+_NEG_CUES = (
+    "no ", "not ", "n't", "without", "no evidence", "no reports", "no record",
+    "did not", "does not", "cleared of", "unfounded", "no adverse", "no history",
+    "free of", "no findings", "no fraud", "no scam", "no lawsuit", "no complaint",
+    "no known", "none ", "nothing ", "well regarded", "well-regarded", "reputable",
+    "transparent", "good standing", "no indication", "no signs",
+)
+
+
+def _has_adverse_signal(answer: str) -> bool:
+    strong = 0
+    weak = 0
+    for sentence in re.split(r"(?<=[.!?])\s+", answer):
+        low = sentence.lower()
+        if any(n in low for n in _NEG_CUES):
+            continue  # sentence exonerates ("no evidence of fraud")
+        if any(k in low for k in _ADVERSE_STRONG):
+            strong += 1
+        elif any(k in low for k in _ADVERSE_WEAK):
+            weak += 1
+    return strong >= 1 or weak >= 2
+
+
 def _check_contradiction(cand: Candidate, r: ResearchResult) -> CheckResult:
     # An org vouching for itself is not evidence — this research call excludes
-    # the org's own domain (see run_verify). Any adverse signal blocks.
-    answer = r.answer.lower()
-    if any(k in answer for k in ADVERSE_KEYWORDS):
+    # the org's own domain (see run_verify). Only an un-negated adverse statement
+    # blocks; "no evidence of fraud" must not trip the scan.
+    if _has_adverse_signal(r.answer):
         src = r.citations[0] if r.citations else None
         return CheckResult(check_name=CheckName.contradiction_scan, result=CheckOutcome.failed,
                            source_url=src.url if src else None,
