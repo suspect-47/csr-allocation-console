@@ -40,8 +40,8 @@
 .mk a{color:inherit; text-decoration:none}
 
 .mk-glass{background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r);
-  backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%);
-  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.22)}
+  backdrop-filter:blur(32px) saturate(185%); -webkit-backdrop-filter:blur(32px) saturate(185%);
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(15,41,31,.05)}
 
 .mk-wrap{max-width:1780px; margin:0 auto; padding:20px clamp(22px,3vw,56px) 72px}
 
@@ -116,8 +116,32 @@
 .mk-btn:focus-visible,.mk-nav button:focus-visible,.mk-chip:focus-visible,.mk-fund:focus-visible,.mk-ptile:focus-visible{outline:2px solid var(--impact); outline-offset:2px}
 
 /* cause cards */
-.mk-cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px}
+.mk-cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; grid-auto-flow:row dense}
 .mk-card{padding:0; overflow:hidden; cursor:pointer; position:relative; display:flex; flex-direction:column}
+
+/* --- bento variants --- */
+.mk-card--wide{grid-column:span 2}
+.mk-card--wide .mk-cart{aspect-ratio:2.5/1}
+@media (max-width:560px){ .mk-card--wide{grid-column:span 1} .mk-card--wide .mk-cart{aspect-ratio:1/.9} }
+
+.mk-card--bold{position:relative; color:#fff; min-height:230px}
+.mk-card--dark{background:linear-gradient(158deg,#12352a,#081f18)}
+.mk-card--emerald{background:linear-gradient(150deg,#12b981,#047857)}
+.mk-card--bold::after{content:""; position:absolute; inset:0; pointer-events:none; z-index:0; opacity:.6;
+  background-image:radial-gradient(rgba(255,255,255,.16) 1px, transparent 1.4px); background-size:10px 10px;
+  -webkit-mask-image:linear-gradient(135deg, rgba(0,0,0,.9), transparent 70%); mask-image:linear-gradient(135deg, rgba(0,0,0,.9), transparent 70%)}
+.mk-bold{position:relative; z-index:1; padding:16px 17px; display:flex; flex-direction:column; flex:1}
+.mk-bold-top{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.mk-pill--solid{background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.30); color:#fff; backdrop-filter:blur(4px)}
+.mk-bold-logo{width:36px; height:36px; border-radius:10px; object-fit:cover; background:#fff; padding:4px; flex:0 0 auto}
+.mk-bold-name{display:block; text-decoration:none; color:#fff; font-family:var(--fd); font-weight:800; font-size:23px; line-height:1.02; letter-spacing:-.02em; margin:16px 0 6px}
+.mk-bold-name:hover{text-decoration:underline; text-underline-offset:3px}
+.mk-bold-blurb{margin:0; font-size:12.5px; opacity:.82; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.mk-bold-foot{display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-top:auto; padding-top:14px}
+.mk-bold-stat b{font-family:var(--fd); font-weight:800; font-size:30px; line-height:.9; letter-spacing:-.02em}
+.mk-bold-stat small{display:block; font-size:10px; text-transform:uppercase; letter-spacing:.09em; opacity:.72; margin-top:3px}
+.mk-fund--solid{background:rgba(255,255,255,.92); color:#08251b; border:none}
+.mk-fund--solid:hover{background:#fff; color:#065f46}
 .mk-cart{aspect-ratio:1/.9; padding:12px; display:flex; flex-direction:column; justify-content:space-between; position:relative}
 .mk-cart .nm{font-family:var(--fd); font-weight:800; font-size:19px; color:#fff; letter-spacing:-.02em; text-shadow:0 2px 16px rgba(0,0,0,.4)}
 .mk-rar{position:absolute; inset:0; border-radius:var(--r) var(--r) 0 0; pointer-events:none; border:1.5px solid transparent}

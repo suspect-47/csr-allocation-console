@@ -328,11 +328,50 @@ function HeroCause({ c, reduce, onFund }: { c: Card; reduce: boolean; onFund: (c
   );
 }
 
+type Variant = "photo" | "photo-wide" | "bold-dark" | "bold-emerald";
+const CARD_PATTERN: Variant[] = [
+  "photo-wide", "photo", "bold-dark", "photo", "bold-emerald", "photo",
+  "photo", "photo-wide", "bold-dark", "photo", "bold-emerald", "photo",
+];
+
 function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boolean; onFund: (c: Card, a: number) => void }) {
+  const v = CARD_PATTERN[i % CARD_PATTERN.length];
+  const mo = {
+    layout: !reduce,
+    initial: reduce ? false : { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    exit: reduce ? {} : { opacity: 0, scale: 0.96 },
+    transition: { delay: Math.min(i * 0.04, 0.3), duration: 0.4 },
+    ...(reduce ? {} : { whileHover: { y: -5 } }),
+  };
+
+  if (v === "bold-dark" || v === "bold-emerald") {
+    const tone = v === "bold-dark" ? "dark" : "emerald";
+    return (
+      <motion.article className={`mk-card mk-card--bold mk-card--${tone}`} {...mo}>
+        <div className="mk-bold">
+          <div className="mk-bold-top">
+            <span className="mk-pill mk-pill--solid">{c.pillar}</span>
+            {c.logo_url && <img className="mk-bold-logo" src={c.logo_url} alt="" onError={imgErr} />}
+          </div>
+          <Link href={`/market/causes/${c.id}`} className="mk-bold-name">{c.org_name}</Link>
+          <p className="mk-bold-blurb">{c.blurb || c.summary}</p>
+          <div className="mk-bold-foot">
+            <div className="mk-bold-stat">
+              {c.verified
+                ? <><b className="num">{c.momentum}</b><small>momentum</small></>
+                : <><b className="num">{fmt(c.backers)}</b><small>backers</small></>}
+            </div>
+            <button className="mk-fund mk-fund--solid" onClick={() => onFund(c, suggested(c))}>Fund</button>
+          </div>
+        </div>
+      </motion.article>
+    );
+  }
+
+  const wide = v === "photo-wide";
   return (
-    <motion.article layout={!reduce} className={`mk-card mk-glass ${c.rarity}`}
-      initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? {} : { opacity: 0, scale: .96 }}
-      transition={{ delay: Math.min(i * 0.04, 0.3), duration: .4 }} {...(reduce ? {} : { whileHover: { y: -5 } })}>
+    <motion.article className={`mk-card mk-glass ${c.rarity}${wide ? " mk-card--wide" : ""}`} {...mo}>
       <div className="mk-cart" style={{ background: grad(c.org_name) }}>
         {c.image_url && <img className="mk-cart-img" src={c.image_url} alt="" loading="lazy" onError={imgErr} />}
         <div className="mk-cart-shade" />
