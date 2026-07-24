@@ -77,6 +77,7 @@ export default function Market() {
   const [tab, setTab] = useState("Causes");
   const [activePillar, setActivePillar] = useState<string | null>(null);
   const [sort, setSort] = useState("trending");
+  const [questsOpen, setQuestsOpen] = useState(false);
   const [amount, setAmount] = useState(50);
   const [toasts, setToasts] = useState<{ id: number; node: ReactNode; cls?: string }[]>([]);
   const [funds, setFunds] = useState(0);
@@ -149,20 +150,29 @@ export default function Market() {
             ))}
           </nav>
           <div className="mk-spacer" />
-          <div className="mk-streak" title="Giving streak"><span className="mk-flame">🔥<b className="num">{patron.streak_days}</b></span></div>
+          <div className="mk-streakwrap">
+            <button className="mk-streak" onClick={() => setQuestsOpen((o) => !o)} title="Daily quests & streak" aria-expanded={questsOpen}>
+              <span className="mk-flame">🔥<b className="num">{patron.streak_days}</b></span>
+            </button>
+            <AnimatePresence>
+              {questsOpen && (
+                <>
+                  <div className="mk-backdrop" onClick={() => setQuestsOpen(false)} />
+                  <motion.div className="mk-questpop mk-glass" initial={{ opacity: 0, y: -8, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: .97 }} transition={{ duration: .16 }}>
+                    <div className="mk-qp-head">🎯 Daily quests</div>
+                    <Quest label="Fund 3 causes" now={Math.min(funds, 3)} max={3} />
+                    <Quest label="Reach next level" now={xpPct} max={100} unit="%" />
+                    <Quest label="Keep your streak" now={patron.streak_days} max={Math.max(7, patron.streak_days)} unit=" days" />
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
           <div className="mk-patron">
             <div className="mk-ring" style={{ "--p": xpPct } as CSSProperties}><div className="disc">{patron.level}</div></div>
             <div className="who"><b>{patron.level_label}</b><small className="num">{fmt(ip)} IP</small></div>
           </div>
         </motion.header>
-
-        {/* QUESTS */}
-        <section className="mk-quests mk-glass">
-          <div className="lab">🎯 Daily quests</div>
-          <Quest label="Fund 3 causes" now={Math.min(funds, 3)} max={3} />
-          <Quest label="Reach next level" now={xpPct} max={100} unit="%" />
-          <Quest label="Keep your streak" now={patron.streak_days} max={Math.max(7, patron.streak_days)} unit=" days" />
-        </section>
 
         {/* FILTER + SORT — own full-width row */}
         <div id="sec-causes" className="mk-filters">
