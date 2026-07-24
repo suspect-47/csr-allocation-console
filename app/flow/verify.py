@@ -17,7 +17,8 @@ from datetime import UTC, datetime, timedelta
 from urllib.parse import urlparse
 
 from app.clients import youcom
-from app.clients.youcom import Citation, Effort, ResearchResult
+from app.clients.youcom import Citation, ResearchResult
+from app.config import settings
 from app.flow.schemas import (
     Candidate,
     CheckName,
@@ -250,11 +251,14 @@ def verify_candidate(state: FlowState, cand: Candidate) -> Verdict:
     checks: list[CheckResult] = []
     for classifier, prompt, exclude in check_specs(cand):
         state.tool_calls += 1
-        r = youcom.research(prompt, effort=Effort.deep, exclude_domains=exclude)
+        r = youcom.research(prompt, effort=settings.research_effort, exclude_domains=exclude)
         checks.append(classifier(cand, r))
     status, blocking = decide_verdict(checks)
     return Verdict(candidate=cand, checks=checks, status=status, blocking_check=blocking)
 
 
 def run_verify(state: FlowState) -> VerdictList:
-    return VerdictList(verdicts=[verify_candidate(state, c) for c in state.candidates])
+    candidates = state.candidates
+    if settings.max_candidates > 0:
+        candidates = candidates[: settings.max_candidates]  # bound cost per run
+    return VerdictList(verdicts=[verify_candidate(state, c) for c in candidates])

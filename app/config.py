@@ -26,6 +26,8 @@ class Settings:
     you_research_base_url: str
     crew_model: str
     youcom_cache_ttl_seconds: int
+    research_effort: str        # you.com Research effort for verify checks (spec default: deep)
+    max_candidates: int         # cap candidates verified per run; 0 = no cap (spec default)
 
     # Secret env var *names* — the values are read lazily by the clients that
     # need them and are never stored on this object.
@@ -53,6 +55,8 @@ def load_settings() -> Settings:
         ),
         crew_model=os.environ.get("CREW_MODEL", "openai/gpt-4o-mini"),
         youcom_cache_ttl_seconds=int(os.environ.get("YOUCOM_CACHE_TTL_SECONDS", "21600")),
+        research_effort=os.environ.get("YOU_RESEARCH_EFFORT", "deep"),
+        max_candidates=int(os.environ.get("MAX_CANDIDATES_PER_RUN", "0")),
     )
 
 
