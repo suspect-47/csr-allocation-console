@@ -118,7 +118,10 @@ export default function Market() {
     }
   }
 
-  const shown = (activePillar ? cards.filter((c) => c.pillar === activePillar) : [...cards]).sort((a, b) => {
+  const heroId = m?.hero?.id;
+  const shown = (activePillar ? cards.filter((c) => c.pillar === activePillar) : [...cards])
+    .filter((c) => c.id !== heroId)
+    .sort((a, b) => {
     switch (sort) {
       case "backed": return b.backers - a.backers;
       case "newest": return (b.created_at || "").localeCompare(a.created_at || "");
