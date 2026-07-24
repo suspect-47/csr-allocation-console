@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/ledger", label: "Ledger", exact: false },
   { href: "/runs", label: "Runs", exact: false },
   { href: "/profile", label: "Profile", exact: false },
+  { href: "/market", label: "Marketplace ↗", exact: false },
 ];
 
 export function Nav() {
