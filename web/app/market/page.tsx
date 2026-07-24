@@ -183,8 +183,8 @@ export default function Market() {
 
           {/* RIGHT */}
           <div className="mk-col">
-            <div id="sec-causes" className="mk-sechead"><h2>✨ Verified &amp; listed <span className="eyebrow" style={{ marginLeft: 6 }}>{shown.length} causes</span></h2>{activePillar && <span className="mk-chip" onClick={() => setActivePillar(null)}>Clear filter ✕</span>}</div>
-            <motion.div className="mk-cards" layout={!reduce}>
+            {activePillar && <div style={{ margin: "0 0 4px" }}><span className="mk-chip" onClick={() => setActivePillar(null)}>← All causes · {activePillar} ✕</span></div>}
+            <motion.div id="sec-causes" className="mk-cards" layout={!reduce}>
               <AnimatePresence>
                 {shown.map((c, i) => <CauseCard key={c.id} c={c} i={i} reduce={reduce} onFund={fund} />)}
                 {shown.length === 0 && <div className="mk-empty" style={{ gridColumn: "1/-1" }}>No causes in this pillar.</div>}
@@ -325,7 +325,7 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
         <div className="mk-cart-shade" />
         <div className="mk-rar" />
         {c.verified && c.momentum >= 85 && <span className="mk-hot">🔥 Hot</span>}
-        <span className={`mk-rtag ${c.rarity}`}>{c.verified ? c.rarity : "listed"}</span>
+        {c.verified && <span className={`mk-rtag ${c.rarity}`}>{c.rarity}</span>}
         <span className="mk-pill">{c.pillar}</span>
         <div className="mk-namewrap">
           {c.logo_url && <img className="mk-logo-badge" src={c.logo_url} alt="" onError={imgErr} />}
@@ -335,9 +335,7 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
       <div className="mk-info">
         <div className="t">{c.headline}</div>
         <div className="d">{c.blurb || c.summary}</div>
-        {c.verified
-          ? <div className="mk-mom"><motion.i initial={{ width: 0 }} animate={{ width: `${c.momentum}%` }} transition={{ duration: .8 }} style={{ display: "block", height: "100%", borderRadius: 5, background: "linear-gradient(90deg,var(--impact),var(--gold))" }} /></div>
-          : <div className="mk-listbadge">◇ Listed · verification pending</div>}
+        {c.verified && <div className="mk-mom"><motion.i initial={{ width: 0 }} animate={{ width: `${c.momentum}%` }} transition={{ duration: .8 }} style={{ display: "block", height: "100%", borderRadius: 5, background: "linear-gradient(90deg,var(--impact),var(--gold))" }} /></div>}
         <div className="mk-row"><span className="bk num">{fmt(c.backers)} backers</span><Link href={`/market/causes/${c.id}`} style={{ fontSize: 11, color: "var(--ink-dim)" }}>Details →</Link></div>
         <div className="mk-row" style={{ marginTop: 8 }}>
           <span className="pr num">{c.impact?.is_stated && c.impact.unit_cost ? <>{money(c.impact.unit_cost)} <small>{c.impact.unit_label}</small></> : <small className="faint">Any amount</small>}</span>
