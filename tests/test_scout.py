@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from app.flow.schemas import Candidate, NeedType
-from app.flow.scout import _clean_org_name, _dedupe, registrable_domain
+from app.flow.scout import _clean_org_name, _dedupe, is_org_domain, registrable_domain
 
 
 def test_registrable_domain_strips_www() -> None:
@@ -31,3 +31,11 @@ def test_dedupe_on_domain() -> None:
 def test_dedupe_fuzzy_name_when_no_domain() -> None:
     out = _dedupe([_cand("Rapid Relief Fund", None), _cand("Rapid Relief Fund!", None)])
     assert len(out) == 1
+
+
+def test_is_org_domain_filters_non_orgs() -> None:
+    assert is_org_domain("waterislifekenya.org") is True
+    assert is_org_domain(None) is False
+    for d in ("guidestar.org", "youtube.com", "nytimes.com", "gofundme.com", "wikipedia.org"):
+        assert is_org_domain(d) is False
+    assert is_org_domain("amp.cnn.com") is False  # subdomain of a non-org domain
