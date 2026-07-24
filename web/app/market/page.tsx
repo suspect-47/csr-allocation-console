@@ -352,6 +352,8 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
     const tone = v.slice(5);
     return (
       <motion.article className={`mk-card mk-card--bold mk-card--${tone}`} {...mo}>
+        {c.image_url && <img className="mk-bold-img" src={c.image_url} alt="" loading="lazy" onError={imgErr} />}
+        <div className="mk-bold-wash" />
         <div className="mk-bold">
           <div className="mk-bold-top">
             <span className="mk-pill mk-pill--solid">{c.pillar}</span>
