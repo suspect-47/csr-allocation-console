@@ -11,6 +11,7 @@
   --fd:"Sora","SF Pro Display","Segoe UI",system-ui,sans-serif;
   --fb:"Instrument Sans","SF Pro Text",system-ui,sans-serif;
   --fm:"IBM Plex Mono","SF Mono",ui-monospace,monospace;
+  --fh:"Caveat","Gochi Hand",cursive;
   color:var(--ink); font-family:var(--fb); font-size:15px; line-height:1.5;
   min-height:100vh; position:relative; overflow-x:hidden; -webkit-font-smoothing:antialiased;
   background:
@@ -48,10 +49,10 @@
 /* top bar */
 .mk-top{position:sticky; top:12px; z-index:40; display:flex; align-items:center; gap:16px; padding:12px 16px; margin-bottom:20px}
 .mk-brand{display:flex; align-items:center; gap:10px}
-.mk-logo{width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
-  background:linear-gradient(150deg,var(--impact),var(--accent)); box-shadow:0 6px 18px rgba(62,139,255,.5)}
-.mk-logo svg{width:19px; height:19px}
-.mk-brand b{font-family:var(--fd); font-weight:800; font-size:19px; letter-spacing:-.03em; display:block; line-height:1}
+.mk-logo{width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
+  background:#f4ecdc; box-shadow:0 6px 16px rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.55)}
+.mk-logo svg{display:block}
+.mk-brand b{font-family:var(--fh); font-weight:700; font-size:28px; letter-spacing:0; display:block; line-height:.82}
 .mk-brand span{font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint)}
 .mk-nav{display:flex; gap:2px; margin-left:6px}
 .mk-nav button{color:var(--ink-dim); background:none; border:none; font-family:var(--fb); font-weight:600; font-size:13.5px; padding:7px 12px; border-radius:11px; cursor:pointer; transition:.18s}

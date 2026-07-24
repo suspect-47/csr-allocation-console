@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
+import { Capybara } from "@/components/Capybara";
 import "./market.css";
 
 // ---- types (mirror lib/market.ts) ----
@@ -123,8 +124,8 @@ export default function Market() {
         {/* TOP BAR */}
         <motion.header className="mk-top mk-glass" {...(reduce ? {} : { initial: { opacity: 0, y: -10 }, animate: { opacity: 1, y: 0 } })}>
           <Link href="/market" className="mk-brand">
-            <span className="mk-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M14 3a5 5 0 0 0-4.9 6l-6 6v4h4v-2h2v-2h2l1.1-1.1A5 5 0 1 0 14 3Zm1.6 4.4a1.4 1.4 0 1 1 0-2 1.4 1.4 0 0 1 0 2Z" fill="#fff" /></svg></span>
-            <span><b>KEYSTONE</b><span className="eyebrow">Verified causes</span></span>
+            <span className="mk-logo"><Capybara size={24} /></span>
+            <span><b>YourDues</b><span className="eyebrow">Verified causes</span></span>
           </Link>
           <nav className="mk-nav">
             {TABS.map((t) => (
@@ -252,7 +253,7 @@ export default function Market() {
           </div>
         </div>
 
-        <div className="mk-foot">KEYSTONE · every cause cleared a 6-point verification chain — registration, independent corroboration, and an adversarial fraud scan. No cause ships without evidence.</div>
+        <div className="mk-foot">YourDues · every cause cleared a 6-point verification chain — registration, independent corroboration, and an adversarial fraud scan. No cause ships without evidence.</div>
       </div>
 
       <div className="mk-toasts">
