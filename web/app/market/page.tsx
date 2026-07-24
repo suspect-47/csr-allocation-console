@@ -307,7 +307,7 @@ function HeroCause({ c, reduce, onFund }: { c: Card; reduce: boolean; onFund: (c
         <div className="mk-price">{c.impact?.is_stated && c.impact.unit_cost ? <><b className="num">{money(c.impact.unit_cost)}</b><span className="per">{c.impact.unit_label}</span></> : <span className="per">Cost per beneficiary not published</span>}<span className="match">2× matched</span></div>
         <div className="mk-cta">
           <button className="mk-btn" onClick={() => onFund(c, suggested(c))}>Fund this cause</button>
-          <Link className="mk-btn ghost" href={`/causes/${c.id}`}>Dossier</Link>
+          <Link className="mk-btn ghost" href={`/market/causes/${c.id}`}>View cause</Link>
         </div>
       </div>
     </motion.article>
@@ -337,7 +337,7 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
         {c.verified
           ? <div className="mk-mom"><motion.i initial={{ width: 0 }} animate={{ width: `${c.momentum}%` }} transition={{ duration: .8 }} style={{ display: "block", height: "100%", borderRadius: 5, background: "linear-gradient(90deg,var(--impact),var(--gold))" }} /></div>
           : <div className="mk-listbadge">◇ Listed · verification pending</div>}
-        <div className="mk-row"><span className="bk num">{fmt(c.backers)} backers</span><Link href={`/causes/${c.id}`} style={{ fontSize: 11, color: "var(--ink-dim)" }}>Details →</Link></div>
+        <div className="mk-row"><span className="bk num">{fmt(c.backers)} backers</span><Link href={`/market/causes/${c.id}`} style={{ fontSize: 11, color: "var(--ink-dim)" }}>Details →</Link></div>
         <div className="mk-row" style={{ marginTop: 8 }}>
           <span className="pr num">{c.impact?.is_stated && c.impact.unit_cost ? <>{money(c.impact.unit_cost)} <small>{c.impact.unit_label}</small></> : <small className="faint">Any amount</small>}</span>
           <button className="mk-fund" onClick={() => onFund(c, suggested(c))}>Fund</button>

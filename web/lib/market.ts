@@ -141,6 +141,62 @@ export async function marketData() {
   return { hero, cards, pillars, orgs, news, events, patron, leaderboard };
 }
 
+export async function causeDetail(id: string) {
+  const c = await one<{
+    id: string; org_name: string; org_domain: string | null; headline: string; summary: string;
+    blurb: string | null; pillar: string; geography: string; need_type: "acute" | "development";
+    status: string; blocking_check: string | null; image_url: string | null; logo_url: string | null;
+  }>(
+    `select id, org_name, org_domain, headline, summary, blurb, pillar, geography, need_type,
+            status, blocking_check, image_url, logo_url
+     from causes where id = $1`,
+    [id]
+  );
+  if (!c) return null;
+
+  const evidence = await q<{ check_name: string; result: "pass" | "fail" | "unknown"; source_url: string | null; source_title: string | null; excerpt: string; retrieved_at: string }>(
+    `select check_name, result, source_url, source_title, excerpt, retrieved_at
+     from evidence where cause_id = $1 order by check_name`,
+    [id]
+  );
+  const impact = await one<{ unit_label: string | null; unit_cost: number | null; currency: string | null; is_stated: boolean; stated_by_url: string | null }>(
+    `select unit_label, unit_cost::float8 as unit_cost, currency, is_stated, stated_by_url from impact_units where cause_id = $1`,
+    [id]
+  );
+  const b = await one<{ backers: number; raised: number }>(
+    `select count(*)::int as backers, coalesce(sum(amount),0)::float8 as raised from pledges where cause_id = $1`,
+    [id]
+  );
+
+  const verified = c.status === "cleared";
+  const passed = evidence.filter((e) => e.result === "pass" && e.check_name !== "directory_listing").length;
+  const unknown = evidence.filter((e) => e.result === "unknown").length;
+  const sources = new Set(evidence.map((e) => e.source_url).filter(Boolean)).size;
+
+  const related = await q<{ id: string; org_name: string; pillar: string; image_url: string | null; logo_url: string | null; status: string }>(
+    `select id, org_name, pillar, image_url, logo_url, status from causes
+     where pillar = $2 and id <> $1 and status in ('cleared','listed') order by created_at desc limit 4`,
+    [id, c.pillar]
+  );
+
+  return {
+    cause: {
+      ...c,
+      verified,
+      rarity: verified ? rarity(passed) : "listed",
+      passed,
+      unknown,
+      momentum: verified ? momentum(passed, sources) : 0,
+      backers: b?.backers ?? 0,
+      raised: b?.raised ?? 0,
+      impact: impact ?? null,
+    },
+    evidence: evidence.filter((e) => e.check_name !== "directory_listing"),
+    directory: evidence.find((e) => e.check_name === "directory_listing") ?? null,
+    related,
+  };
+}
+
 const sameUtcDay = (a: Date, b: Date) =>
   a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCDate() === b.getUTCDate();
 
