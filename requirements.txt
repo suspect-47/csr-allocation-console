@@ -1,7 +1,9 @@
-# Pinned intentionally — do NOT float (spec §1 "pin the CrewAI version", §2).
-# Confirm exact patch versions against your package index before first install.
-crewai==0.140.0
-litellm==1.93.0          # used directly by app/clients/llm.py (OpenAI); must satisfy crewai's range
+# Pinned intentionally — do NOT float (spec §2). Confirm exact patch versions
+# against your package index before first install.
+# NOTE: CrewAI was dropped — it only wrapped the deterministic stage functions
+# and added a heavy dependency (+ a litellm pin conflict) for no behaviour
+# difference. The agentic work is you.com Research + OpenAI (via litellm).
+litellm==1.93.0          # OpenAI reasoning model, used by app/clients/llm.py
 pydantic==2.10.4
 httpx==0.28.1
 psycopg[binary,pool]==3.2.3

@@ -1,4 +1,4 @@
-"""Reasoning model access via litellm (the layer CrewAI's LLM wraps).
+"""Reasoning model access via litellm (OpenAI).
 
 Deviation from spec §1: OpenAI instead of Claude (user directive, 2026-07). The
 model polishes card copy ONLY — it never makes a verification or allocation

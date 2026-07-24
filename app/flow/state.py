@@ -1,6 +1,6 @@
 """Flow state — one Pydantic BaseModel threaded through every stage (spec §3).
 
-The CrewAI Flow reads and writes this. Each stage appends its typed output.
+The pipeline reads and writes this. Each stage appends its typed output.
 Nothing here estimates or fills a number a source did not state.
 """
 
@@ -39,8 +39,8 @@ class StageTiming(BaseModel):
 
 
 class FlowState(BaseModel):
-    # inputs — defaulted so CrewAI can auto-instantiate the structured state;
-    # the worker sets both to real values before kickoff (see flow.pipeline).
+    # inputs — the worker constructs FlowState with both set; profile() asserts
+    # org_profile is present before the stages use it.
     run_id: str = ""
     org_profile: OrgProfile | None = None
 

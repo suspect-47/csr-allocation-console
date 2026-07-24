@@ -12,7 +12,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from app.clients import youcom
 from app.clients.youcom import Citation, ResearchResult, SearchHit, SearchResult
-from app.flow.pipeline import run_pipeline_pure
+from app.flow.pipeline import run_pipeline
 from app.flow.state import FlowState, OrgProfile
 
 RECENT = (datetime.now(UTC) - timedelta(days=7)).strftime("%Y-%m-%d")
@@ -50,7 +50,7 @@ def test_full_pipeline_clears_and_allocates() -> None:
         run_id="r1",
         org_profile=OrgProfile(name="Acme", pillars=["Health"], geographies=["Region"], quarterly_budget=100_000.0),
     )
-    run_pipeline_pure(state)
+    run_pipeline(state)
 
     assert len(state.candidates) == 1                      # two searches, same domain, deduped
     assert len(state.cleared_verdicts) == 1

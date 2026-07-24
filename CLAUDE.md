@@ -10,18 +10,20 @@ is why this needs agents.
 
 ## Architecture — read before touching anything
 
-Three parts. The split exists because **CrewAI is Python-only** — the agent flow cannot
-move to Node.
+Three parts. The web layer is Next.js; the verification pipeline is implemented and
+tested in Python (verify logic, eval gate), so it runs as a separate Python worker.
 
 | Part | Stack | Location | Job |
 |------|-------|----------|-----|
 | Frontend | Next.js App Router (React, client components) | `web/app/*/page.tsx`, `web/components/` | UI |
-| Web API | Next.js route handlers (Node/TS) | `web/app/api/`, `web/lib/` | read Postgres, enqueue jobs — **never runs a crew** |
-| Agent engine | Python + CrewAI | `app/` | runs the flow off the queue |
+| Web API | Next.js route handlers (Node/TS) | `web/app/api/`, `web/lib/` | read Postgres, enqueue jobs — **never runs the flow** |
+| Agent engine | Python (deterministic pipeline + you.com/OpenAI) | `app/` | runs the flow off the queue |
 
 Shared state: **Postgres** (6 tables, `migrations/0001_init.sql`) + **Redis** queue key
 `csr:jobs`. Data flow: `browser → Next /api (enqueue) → run row; worker BRPOP csr:jobs →
-CrewAI flow → you.com Research (+ OpenAI for copy only) → write Postgres; browser polls /api/runs/:id`.
+pipeline (you.com Research + OpenAI copy) → write Postgres; browser polls /api/runs/:id`.
+The agentic work is the you.com Research calls in verify; decisions are code. (An earlier
+CrewAI Flow wrapper was dropped — it only re-called the same stage functions.)
 
 ## Layout
 
@@ -65,7 +67,7 @@ No git repo (intentional). No `.venv` committed — recreate with `pip install -
 - **Decisions in code, not the model.** The verdict rule (`decide_verdict`), allocation
   constraints (≤40% cap, ≥20% development, visible remainder), and citation coverage are code +
   validators, not prompt instructions. The you.com Research calls are the "agentic" work.
-- **Web never runs a crew.** HTTP handlers enqueue; the worker executes. A crew in a request
+- **Web never runs the flow.** HTTP handlers enqueue; the worker executes. The flow in a request
   handler times out.
 - **A check with no source URL is `unknown`, never `pass`.**
 

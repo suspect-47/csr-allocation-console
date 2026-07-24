@@ -1,8 +1,8 @@
-"""Worker — CrewAI flow executor (spec §1).
+"""Worker — flow executor (spec §1).
 
 Pulls one job from the Key Value queue, runs exactly one flow to completion,
 persists causes + evidence + allocation, updates the run row. Sequential: one
-flow run per job. A crew never runs inside an HTTP handler — only here.
+flow run per job. The flow runs here, never inside an HTTP handler.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from types import FrameType
 from typing import Any
 
 from app import kv, repository
-from app.flow.pipeline import execute_flow
+from app.flow.pipeline import run_pipeline
 from app.flow.state import FlowState
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -43,7 +43,7 @@ def process_job(job: dict[str, Any]) -> None:
     repository.set_run_status(run_id, "running")
     state = FlowState(run_id=run_id, org_profile=profile)
     try:
-        state = execute_flow(state)
+        state = run_pipeline(state)
         repository.persist_results(run_id, state)
         repository.finish_run(run_id, state, "succeeded")
         log.info(

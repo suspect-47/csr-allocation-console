@@ -16,21 +16,27 @@ completeness everywhere it conflicts.
 
 | Concern | Tool |
 |---|---|
-| Agent orchestration | CrewAI — Flows outer, stage functions inner (pinned) |
-| Web retrieval | you.com Search API (discovery) + Research API (verification) |
+| Orchestration | Deterministic Python pipeline (CrewAI dropped — see note) |
+| Web retrieval / verification | you.com Search API (discovery) + Research API (verification) |
 | Reasoning model | OpenAI (`gpt-4o-mini`) via litellm — polishes card copy only (deviation from spec's Claude, per user) |
 | Runtime | Render — web + worker + cron + Postgres + Key Value |
 | CI / gate / deploy trigger | Opsera |
 | Frontend + web API | **Next.js (App Router)** — React UI + `/api` route handlers |
-| Agent flow | **Python worker + cron** — CrewAI (Node has no CrewAI) |
+| Agent flow | **Python worker + cron** — sequential pipeline |
 
-### Architecture: Next.js front + back, Python agents
+> **CrewAI was dropped.** It only wrapped the deterministic stage functions in a
+> `Flow` skeleton and added a heavy dependency (plus a litellm pin conflict) for
+> no behavioural difference — the pure executor already produced identical runs.
+> The genuine "agents" are the you.com Research calls (multi-source verification)
+> and the OpenAI copy pass; decisions are code (spec §8). Deviates from spec §1.
+
+### Architecture: Next.js front + back, Python pipeline
 
 `web/` is a **Next.js** app: it renders the React UI **and** serves the `/api/*`
 route handlers (reads Postgres, enqueues jobs). The **Python worker** runs the
-CrewAI flow; **cron** enqueues discovery. Web and worker share one Postgres and
-one Redis queue (`csr:jobs`). CrewAI is Python-only, so the agent flow stays
-Python — the split maps cleanly onto the spec's "web enqueues, worker executes".
+verification pipeline; **cron** enqueues discovery. Web and worker share one
+Postgres and one Redis queue (`csr:jobs`) — "web enqueues, worker executes". The
+pipeline stays Python because that is where the verify logic and tests live.
 
 ### The one boundary that matters
 
@@ -39,7 +45,7 @@ Python — the split maps cleanly onto the spec's "web enqueues, worker executes
 as the final Opsera stage. Do not enable Opsera VIBEshift for steady-state
 deploys — it provisions its own infra and duplicates the Render services.
 
-A crew never runs inside an HTTP request. **Web (Next.js) enqueues, worker
+The flow never runs inside an HTTP request. **Web (Next.js) enqueues, worker
 executes, UI polls** `/api/runs/{id}`.
 
 ---
@@ -90,8 +96,8 @@ see below). Two things follow, both intentional and documented in-code:
    `python -m scripts.eval_gate` exits non-zero by design. See
    `tests/fixtures/README.md`.
 
-3. **Pinned versions are intentional** (`requirements.txt`) but confirm exact
-   patch versions against your index. `crewai` is pinned and must not float.
+3. **Pinned versions are intentional** (`requirements.txt`) — confirm exact
+   patch versions against your index.
 
 The offline-buildable code (schemas, verify logic, allocation constraints,
 cache, scout dedupe, API, SPA) is covered by `pytest` and can be run with
@@ -102,7 +108,7 @@ cache, scout dedupe, API, SPA) is covered by `pytest` and can be run with
 ## Bringing it live
 
 1. Put keys in `.env`: `YOU_SEARCH_API_KEY`, `YOU_RESEARCH_API_KEY`,
-   `ANTHROPIC_API_KEY`. Code references names only — never logs values.
+   `OPENAI_API_KEY`. Code references names only — never logs values.
 2. Confirm the you.com client `VERIFY` items above.
 3. Record fixtures (needs keys; replace the four `bad-*` placeholders with real
    known-bad orgs first):
@@ -136,12 +142,12 @@ visible hatched region. Verification state is encoded as **texture + color**
 ## The flow (`app/flow/`)
 
 ```
-@start   scout    → candidates   (Search; proposes, never judges)
-@listen  verify   → verdicts     (Research ×6 per candidate; the core)
-@router  route    → cleared / blocked
-@listen  score    → impacts      (stated unit cost only, else null)
-@listen  compose  → cards        (every claim cited, validated in code)
-@listen  allocate → sheet        (≤40% cap, ≥20% development, remainder visible)
+scout    → candidates   (Search; proposes, never judges)
+verify   → verdicts     (Research ×6 per candidate; the core)
+route    → cleared / blocked   (plain conditional)
+score    → impacts      (stated unit cost only, else null)
+compose  → cards        (every claim cited + optional OpenAI polish)
+allocate → sheet        (≤40% cap, ≥20% development, remainder visible)
 ```
 
 Verdict rule, impact fabrication guard, citation coverage, and allocation
