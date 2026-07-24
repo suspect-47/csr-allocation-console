@@ -149,7 +149,7 @@ export default function Market() {
             ))}
           </nav>
           <div className="mk-spacer" />
-          <div className="mk-streak" title="Giving streak">🔥 <b className="num">{patron.streak_days}</b></div>
+          <div className="mk-streak" title="Giving streak"><span className="mk-flame">🔥<b className="num">{patron.streak_days}</b></span></div>
           <div className="mk-patron">
             <div className="mk-ring" style={{ "--p": xpPct } as CSSProperties}><div className="disc">{patron.level}</div></div>
             <div className="who"><b>{patron.level_label}</b><small className="num">{fmt(ip)} IP</small></div>

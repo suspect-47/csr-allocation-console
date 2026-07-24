@@ -59,8 +59,10 @@
 .mk-nav button:hover{color:var(--ink); background:var(--glass)}
 .mk-nav button.on{color:var(--ink); background:var(--glass-2)}
 .mk-spacer{flex:1}
-.mk-streak{display:flex; align-items:center; gap:6px; padding:7px 11px; border-radius:12px; background:var(--glass); border:1px solid var(--stroke); font-family:var(--fm); font-weight:700}
-.mk-streak b{color:var(--gold)}
+.mk-streak{display:flex; align-items:center; padding:4px 9px; border-radius:12px; background:var(--glass); border:1px solid var(--stroke)}
+.mk-flame{position:relative; display:inline-flex; font-size:27px; line-height:1}
+.mk-flame b{position:absolute; left:0; right:0; top:58%; transform:translateY(-50%); text-align:center;
+  font-family:var(--fm); font-weight:800; font-size:11px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.7)}
 .mk-patron{display:flex; align-items:center; gap:10px; padding:6px 10px 6px 6px; border-radius:14px; background:var(--glass-2); border:1px solid var(--stroke)}
 .mk-ring{width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(var(--gold) calc(var(--p,0)*1%), rgba(255,255,255,.16) 0); transition:background .8s cubic-bezier(.2,.7,.2,1)}
 .mk-ring .disc{width:31px; height:31px; border-radius:50%; background:var(--bg-0); display:grid; place-items:center; font-family:var(--fd); font-weight:800; font-size:13px}
