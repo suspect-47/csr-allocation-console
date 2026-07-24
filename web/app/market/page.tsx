@@ -164,6 +164,22 @@ export default function Market() {
           <Quest label="Keep your streak" now={patron.streak_days} max={Math.max(7, patron.streak_days)} unit=" days" />
         </section>
 
+        {/* FILTER + SORT — own full-width row */}
+        <div id="sec-causes" className="mk-filters">
+          <div className="mk-fchips">
+            <button className={!activePillar ? "on" : ""} onClick={() => setActivePillar(null)}>All <span>{cards.length}</span></button>
+            {m.pillars.map((p) => (
+              <button key={p.pillar} className={activePillar === p.pillar ? "on" : ""} onClick={() => setActivePillar(activePillar === p.pillar ? null : p.pillar)}>{p.pillar} <span>{p.count}</span></button>
+            ))}
+          </div>
+          <div className="mk-sortwrap">
+            <span className="mk-sortlabel">Sort</span>
+            <select className="mk-sort" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort causes">
+              {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </div>
+        </div>
+
         <div className="mk-grid">
           {/* LEFT */}
           <div className="mk-col">
@@ -199,20 +215,6 @@ export default function Market() {
 
           {/* RIGHT */}
           <div className="mk-col">
-            <div id="sec-causes" className="mk-filters">
-              <div className="mk-fchips">
-                <button className={!activePillar ? "on" : ""} onClick={() => setActivePillar(null)}>All <span>{cards.length}</span></button>
-                {m.pillars.map((p) => (
-                  <button key={p.pillar} className={activePillar === p.pillar ? "on" : ""} onClick={() => setActivePillar(activePillar === p.pillar ? null : p.pillar)}>{p.pillar} <span>{p.count}</span></button>
-                ))}
-              </div>
-              <div className="mk-sortwrap">
-                <span className="mk-sortlabel">Sort</span>
-                <select className="mk-sort" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort causes">
-                  {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-                </select>
-              </div>
-            </div>
             <motion.div className="mk-cards" layout={!reduce}>
               <AnimatePresence>
                 {shown.map((c, i) => <CauseCard key={c.id} c={c} i={i} reduce={reduce} onFund={fund} />)}
@@ -336,9 +338,11 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
         {c.image_url && <img className="mk-cart-img" src={c.image_url} alt="" loading="lazy" onError={imgErr} />}
         <div className="mk-cart-shade" />
         <div className="mk-rar" />
-        {c.verified && c.momentum >= 85 && <span className="mk-hot">🔥 Hot</span>}
         {c.verified && <span className={`mk-rtag ${c.rarity}`}>{c.rarity}</span>}
-        <span className="mk-pill">{c.pillar}</span>
+        <div className="mk-carttop">
+          <span className="mk-pill">{c.pillar}</span>
+          {c.verified && c.momentum >= 85 && <span className="mk-hot">🔥 Hot</span>}
+        </div>
         <div className="mk-namewrap">
           {c.logo_url && <img className="mk-logo-badge" src={c.logo_url} alt="" onError={imgErr} />}
           <div className="nm">{c.org_name}</div>

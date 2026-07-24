@@ -122,7 +122,8 @@
 .mk-rtag.leg{background:var(--gold); color:#3a2600} .mk-rtag.rare{background:var(--violet); color:#150a3a} .mk-rtag.verified{background:var(--impact); color:#04302a}
 .mk-rtag.listed{background:rgba(255,255,255,.85); color:#0a2544}
 .mk-card.listed .mk-rar{border-color:rgba(255,255,255,.28); box-shadow:inset 0 0 20px rgba(255,255,255,.10)}
-.mk-hot{position:absolute; top:10px; left:10px; font-family:var(--fm); font-size:10px; font-weight:800; padding:4px 8px; border-radius:999px; background:var(--coral); color:#fff}
+.mk-carttop{display:flex; gap:6px; align-items:center; align-self:flex-start; position:relative; z-index:3}
+.mk-hot{font-family:var(--fm); font-size:10px; font-weight:800; padding:4px 8px; border-radius:999px; background:var(--coral); color:#fff}
 .mk-info{padding:10px 13px 13px; display:flex; flex-direction:column; flex:1}
 .mk-info > .mk-row:last-child{margin-top:auto; padding-top:4px}
 .mk-info .t{font-family:var(--fd); font-weight:700; font-size:14.5px; margin-bottom:2px}
@@ -159,7 +160,9 @@
 .mk-chip{font-family:var(--fm); font-size:12px; padding:6px 12px; border-radius:999px; background:var(--glass); border:1px solid var(--stroke); color:var(--ink-dim); cursor:pointer; white-space:nowrap}
 
 /* filter + sort bar */
-.mk-filters{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:14px; flex-wrap:nowrap}
+.mk-filters{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:nowrap;
+  padding:11px 16px; background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r);
+  backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%)}
 .mk-fchips{display:flex; gap:8px; flex-wrap:wrap; flex:1; min-width:0}
 .mk-sortwrap{flex:0 0 auto}
 .mk-fchips button{font-family:var(--fb); font-weight:600; font-size:13px; color:var(--ink-dim); background:var(--glass); border:1px solid var(--stroke); padding:7px 13px; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:.15s}
