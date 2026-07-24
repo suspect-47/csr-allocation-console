@@ -160,9 +160,7 @@
 .mk-chip{font-family:var(--fm); font-size:12px; padding:6px 12px; border-radius:999px; background:var(--glass); border:1px solid var(--stroke); color:var(--ink-dim); cursor:pointer; white-space:nowrap}
 
 /* filter + sort bar */
-.mk-filters{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:nowrap;
-  padding:11px 16px; background:var(--glass); border:1px solid var(--stroke); border-radius:var(--r);
-  backdrop-filter:blur(22px) saturate(140%); -webkit-backdrop-filter:blur(22px) saturate(140%)}
+.mk-filters{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:nowrap; padding:2px}
 .mk-fchips{display:flex; gap:8px; flex-wrap:wrap; flex:1; min-width:0}
 .mk-sortwrap{flex:0 0 auto}
 .mk-fchips button{font-family:var(--fb); font-weight:600; font-size:13px; color:var(--ink-dim); background:var(--glass); border:1px solid var(--stroke); padding:7px 13px; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:.15s}
