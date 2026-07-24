@@ -220,23 +220,6 @@ export default function Market() {
               </AnimatePresence>
             </motion.div>
 
-            {/* PILLARS */}
-            <div id="sec-discover" className="mk-sechead" style={{ marginTop: 2 }}><h2>Browse by pillar</h2></div>
-            <div className="mk-pillars">
-              {m.pillars.map((p) => {
-                const k = pillarKey(p.pillar);
-                return (
-                  <div key={p.pillar} className={`mk-ptile ${k} ${activePillar === p.pillar ? "on" : ""}`} tabIndex={0}
-                    onClick={() => setActivePillar(activePillar === p.pillar ? null : p.pillar)}
-                    onKeyDown={(e) => e.key === "Enter" && setActivePillar(activePillar === p.pillar ? null : p.pillar)}>
-                    <svg viewBox="0 0 24 24" fill="none">{PILLAR_ICON[k]}</svg>
-                    <div><b>{p.pillar}</b><br /><small className="num">{p.count} cleared</small></div>
-                  </div>
-                );
-              })}
-              {m.pillars.length === 0 && <div className="mk-empty">Pillars appear once causes clear.</div>}
-            </div>
-
             {/* TRENDING ORGS */}
             {m.orgs.length > 0 && <>
               <div className="mk-sechead" style={{ marginTop: 2 }}><h2>Trending orgs</h2><span className="mk-chip">Verified</span></div>
