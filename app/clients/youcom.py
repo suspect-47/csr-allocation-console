@@ -60,6 +60,8 @@ class SearchHit(BaseModel):
     title: str = ""
     url: str = ""
     snippet: str = ""
+    thumbnail: str = ""   # you.com thumbnail_url — a representative image
+    favicon: str = ""     # you.com favicon_url — the org's logo mark
 
 
 class SearchResult(BaseModel):
@@ -121,7 +123,13 @@ def _parse_search(raw: dict[str, object]) -> SearchResult:
             if not snippet and isinstance(snippets, list):
                 snippet = " ".join(str(s) for s in snippets)
             hits.append(
-                SearchHit(title=str(h.get("title", "")), url=str(h.get("url", "")), snippet=str(snippet))
+                SearchHit(
+                    title=str(h.get("title", "")),
+                    url=str(h.get("url", "")),
+                    snippet=str(snippet),
+                    thumbnail=str(h.get("thumbnail_url", "") or ""),
+                    favicon=str(h.get("favicon_url", "") or ""),
+                )
             )
     return SearchResult(hits=hits)
 

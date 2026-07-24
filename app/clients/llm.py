@@ -65,3 +65,39 @@ def polish_copy(
     except Exception as exc:  # noqa: BLE001 - LLM polish is best-effort, never fatal
         log.warning("card copy polish failed (%s); using deterministic copy", type(exc).__name__)
         return None
+
+
+_ORG_SYS = (
+    "You extract a charity's real display name and a one-line description from a "
+    "search result. Return strict JSON {\"name\": string, \"blurb\": string}. "
+    "name is the organization's real name (not the page title or a listicle), "
+    "blurb is <=110 chars describing what they do. If it is clearly not a single "
+    "charity/nonprofit, return {\"name\": \"\"}."
+)
+
+
+def describe_org(title: str, domain: str, snippet: str) -> dict[str, str] | None:
+    """Clean org name + one-line blurb from a search hit. None if unavailable."""
+    if not available():
+        return None
+    try:
+        import litellm
+
+        resp = litellm.completion(
+            model=settings.crew_model,
+            messages=[
+                {"role": "system", "content": _ORG_SYS},
+                {"role": "user", "content": f"Domain: {domain}\nTitle: {title}\nSnippet: {snippet}"},
+            ],
+            temperature=0,
+            max_tokens=120,
+            response_format={"type": "json_object"},
+        )
+        data = json.loads(resp.choices[0].message.content or "{}")
+        name = str(data.get("name", "")).strip()
+        if not name:
+            return None
+        return {"name": name[:60], "blurb": str(data.get("blurb", "")).strip()[:120]}
+    except Exception as exc:  # noqa: BLE001 - best-effort enrichment
+        log.warning("describe_org failed (%s)", type(exc).__name__)
+        return None

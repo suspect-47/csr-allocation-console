@@ -56,10 +56,12 @@ function momentum(passed: number, sources: number): number {
 export async function marketData() {
   const causes = await q<{
     id: string; org_name: string; org_domain: string | null; headline: string; summary: string;
-    pillar: string; geography: string; need_type: "acute" | "development"; created_at: string;
+    pillar: string; geography: string; need_type: "acute" | "development"; status: string;
+    image_url: string | null; logo_url: string | null; blurb: string | null; created_at: string;
   }>(
-    `select id, org_name, org_domain, headline, summary, pillar, geography, need_type, created_at
-     from causes where status = 'cleared' order by created_at desc`
+    `select id, org_name, org_domain, headline, summary, pillar, geography, need_type, status,
+            image_url, logo_url, blurb, created_at
+     from causes where status in ('cleared', 'listed') order by created_at desc`
   );
 
   const ev = await q<{ cause_id: string; passed: number; unknown: number; sources: number }>(
@@ -83,23 +85,27 @@ export async function marketData() {
   const impByCause = new Map(impacts.map((i) => [i.cause_id, i]));
 
   const cards = causes.map((c) => {
-    const e = evByCause.get(c.id) ?? { passed: 3, unknown: 0, sources: 1 };
+    const verified = c.status === "cleared";
+    const e = evByCause.get(c.id) ?? { passed: verified ? 5 : 0, unknown: 0, sources: 1 };
     const p = plByCause.get(c.id) ?? { backers: 0, raised: 0 };
     const imp = impByCause.get(c.id);
     return {
       ...c,
-      rarity: rarity(e.passed),
-      passed: e.passed,
-      unknown: e.unknown,
-      momentum: momentum(e.passed, e.sources),
+      verified,
+      rarity: verified ? rarity(e.passed) : ("listed" as const),
+      passed: verified ? e.passed : 0,
+      unknown: verified ? e.unknown : 0,
+      momentum: verified ? momentum(e.passed, e.sources) : 0,
       backers: p.backers,
       raised: p.raised,
       impact: imp ?? null,
     };
   });
 
-  // hero = highest momentum, then most backers
-  const hero = [...cards].sort((a, b) => b.momentum - a.momentum || b.backers - a.backers)[0] ?? null;
+  // hero = a verified cause if we have one (highest momentum), else the catalog
+  const verifiedCards = cards.filter((c) => c.verified);
+  const heroPool = verifiedCards.length ? verifiedCards : cards;
+  const hero = [...heroPool].sort((a, b) => b.momentum - a.momentum || b.backers - a.backers)[0] ?? null;
 
   const pillars = Array.from(
     cards.reduce((m, c) => m.set(c.pillar, (m.get(c.pillar) ?? 0) + 1), new Map<string, number>())
@@ -107,14 +113,15 @@ export async function marketData() {
 
   const orgs = cards
     .filter((c) => c.org_domain)
-    .map((c) => ({ org_name: c.org_name, org_domain: c.org_domain! }))
+    .map((c) => ({ org_name: c.org_name, org_domain: c.org_domain!, logo_url: c.logo_url }))
     .filter((o, i, a) => a.findIndex((x) => x.org_domain === o.org_domain) === i)
-    .slice(0, 10);
+    .slice(0, 14);
 
   const newsRows = await q<{ source_title: string; source_url: string; excerpt: string; check_name: string; org_name: string }>(
     `select e.source_title, e.source_url, e.excerpt, e.check_name, c.org_name
      from evidence e join causes c on c.id = e.cause_id
      where e.source_url is not null and e.source_title is not null and e.result = 'pass'
+       and e.check_name <> 'directory_listing'
      order by e.retrieved_at desc limit 40`
   );
   const seen = new Set<string>();

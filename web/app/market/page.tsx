@@ -6,17 +6,21 @@ import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 
 import "./market.css";
 
 // ---- types (mirror lib/market.ts) ----
-type Rarity = "legendary" | "rare" | "verified";
+type Rarity = "legendary" | "rare" | "verified" | "listed";
 interface Impact { unit_label: string | null; unit_cost: number | null; is_stated: boolean }
 interface Card {
   id: string; org_name: string; org_domain: string | null; headline: string; summary: string;
   pillar: string; geography: string; need_type: "acute" | "development";
-  rarity: Rarity; passed: number; unknown: number; momentum: number; backers: number; raised: number; impact: Impact | null;
+  rarity: Rarity; verified: boolean; passed: number; unknown: number; momentum: number;
+  backers: number; raised: number; impact: Impact | null;
+  image_url: string | null; logo_url: string | null; blurb: string | null;
 }
 interface Patron { id: string; name: string; impact_points: number; streak_days: number; level: number; level_label: string; xp_into_level: number; xp_for_level: number }
 interface News { source_title: string; source_url: string; excerpt: string; check_name: string; org_name: string }
 interface Ev { id: string; title: string; pillar: string | null; geography: string | null; status: string; source_url: string | null }
-interface Market { hero: Card | null; cards: Card[]; pillars: { pillar: string; count: number }[]; orgs: { org_name: string; org_domain: string }[]; news: News[]; events: Ev[]; patron: Patron; leaderboard: Patron[] }
+interface Org { org_name: string; org_domain: string; logo_url: string | null }
+interface Market { hero: Card | null; cards: Card[]; pillars: { pillar: string; count: number }[]; orgs: Org[]; news: News[]; events: Ev[]; patron: Patron; leaderboard: Patron[] }
+function imgErr(e: { currentTarget: HTMLImageElement }) { e.currentTarget.style.display = "none"; }
 
 const TABS = ["Discover", "Causes", "Events", "News", "Leaderboard"];
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -178,7 +182,7 @@ export default function Market() {
 
           {/* RIGHT */}
           <div className="mk-col">
-            <div id="sec-causes" className="mk-sechead"><h2>✨ Cleared &amp; fundable <span className="eyebrow" style={{ marginLeft: 6 }}>{shown.length} causes</span></h2>{activePillar && <span className="mk-chip" onClick={() => setActivePillar(null)}>Clear filter ✕</span>}</div>
+            <div id="sec-causes" className="mk-sechead"><h2>✨ Verified &amp; listed <span className="eyebrow" style={{ marginLeft: 6 }}>{shown.length} causes</span></h2>{activePillar && <span className="mk-chip" onClick={() => setActivePillar(null)}>Clear filter ✕</span>}</div>
             <motion.div className="mk-cards" layout={!reduce}>
               <AnimatePresence>
                 {shown.map((c, i) => <CauseCard key={c.id} c={c} i={i} reduce={reduce} onFund={fund} />)}
@@ -208,8 +212,10 @@ export default function Market() {
               <div className="mk-sechead" style={{ marginTop: 2 }}><h2>Trending orgs</h2><span className="mk-chip">Verified</span></div>
               <div className="mk-orgs mk-glass">
                 {m.orgs.map((o) => (
-                  <a className="mk-org" key={o.org_domain} href={`https://${o.org_domain}`} target="_blank" rel="noreferrer">
-                    <div className="av" style={{ background: grad(o.org_name) }}>{initials(o.org_name)}</div>
+                  <a className="mk-org" key={o.org_domain} href={`https://${o.org_domain}`} target="_blank" rel="noreferrer" title={o.org_name}>
+                    <div className="av" style={{ background: grad(o.org_name) }}>
+                      {o.logo_url ? <img src={o.logo_url} alt="" onError={imgErr} /> : initials(o.org_name)}
+                    </div>
                     <small>{o.org_name}</small>
                   </a>
                 ))}
@@ -276,21 +282,28 @@ function HeroCause({ c, reduce, onFund }: { c: Card; reduce: boolean; onFund: (c
   const slots = Array.from({ length: 6 }, (_, i) => (i < c.passed ? "pass" : i < c.passed + c.unknown ? "unk" : ""));
   return (
     <motion.article className="mk-hero mk-glass" {...(reduce ? {} : { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: .5 } })}>
-      <div className="mk-art" style={{ background: `radial-gradient(120% 90% at 20% 0%, rgba(53,227,194,.5), transparent 55%), radial-gradient(120% 120% at 100% 100%, rgba(62,139,255,.85), transparent 60%), ${grad(c.org_name)}` }}>
-        <div className="tags"><span className={`mk-tag ${c.rarity === "legendary" ? "leg" : c.rarity === "rare" ? "rare" : ""}`}>◆ {c.rarity}</span><span className="mk-tag">{c.pillar} · {c.geography}</span></div>
+      <div className="mk-art" style={{ background: grad(c.org_name) }}>
+        {c.image_url && <img className="mk-art-img" src={c.image_url} alt="" onError={imgErr} />}
+        <div className="mk-art-shade" />
+        <div className="tags">
+          <span className={`mk-tag ${c.verified ? (c.rarity === "legendary" ? "leg" : "rare") : ""}`}>◆ {c.verified ? c.rarity : "Listed"}</span>
+          <span className="mk-tag">{c.pillar} · {c.geography}</span>
+        </div>
         <div>
+          {c.logo_url && <img className="mk-art-logo" src={c.logo_url} alt="" onError={imgErr} />}
           <div className="big">{c.org_name}</div>
-          <div className="mk-crest" title="6-check verification">{slots.map((s, i) => <i key={i} className={s}>{s === "pass" ? check : s === "unk" ? <svg viewBox="0 0 24 24"><path d="M12 3v10" stroke="#ffe6b0" strokeWidth="2.4" strokeLinecap="round" /><circle cx="12" cy="18" r="1.4" fill="#ffe6b0" /></svg> : null}</i>)}</div>
+          {c.verified && <div className="mk-crest" title="6-check verification">{slots.map((s, i) => <i key={i} className={s}>{s === "pass" ? check : s === "unk" ? <svg viewBox="0 0 24 24"><path d="M12 3v10" stroke="#ffe6b0" strokeWidth="2.4" strokeLinecap="round" /><circle cx="12" cy="18" r="1.4" fill="#ffe6b0" /></svg> : null}</i>)}</div>}
         </div>
       </div>
       <div className="body">
         <h1>{c.headline}</h1>
         <div className="mk-metrics">
           <div className="mk-metric"><b className="num">{fmt(c.backers)}</b><small>Backers</small></div>
-          <div className="mk-metric"><b className="num">{c.passed} / 6</b><small>Checks passed</small></div>
-          <div className="mk-metric"><b className="num">{c.momentum}</b><small>Momentum</small></div>
+          {c.verified
+            ? <><div className="mk-metric"><b className="num">{c.passed} / 6</b><small>Checks passed</small></div><div className="mk-metric"><b className="num">{c.momentum}</b><small>Momentum</small></div></>
+            : <><div className="mk-metric"><b>{c.pillar}</b><small>Pillar</small></div><div className="mk-metric"><b>◇ Listed</b><small>Verification pending</small></div></>}
         </div>
-        <p className="dim" style={{ margin: "0 0 4px" }}>{c.summary}</p>
+        <p className="dim" style={{ margin: "0 0 4px" }}>{c.blurb || c.summary}</p>
         <div className="mk-price">{c.impact?.is_stated && c.impact.unit_cost ? <><b className="num">{money(c.impact.unit_cost)}</b><span className="per">{c.impact.unit_label}</span></> : <span className="per">Cost per beneficiary not published</span>}<span className="match">2× matched</span></div>
         <div className="mk-cta">
           <button className="mk-btn" onClick={() => onFund(c, suggested(c))}>Fund this cause</button>
@@ -307,19 +320,26 @@ function CauseCard({ c, i, reduce, onFund }: { c: Card; i: number; reduce: boole
       initial={reduce ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? {} : { opacity: 0, scale: .96 }}
       transition={{ delay: Math.min(i * 0.04, 0.3), duration: .4 }} {...(reduce ? {} : { whileHover: { y: -5 } })}>
       <div className="mk-cart" style={{ background: grad(c.org_name) }}>
+        {c.image_url && <img className="mk-cart-img" src={c.image_url} alt="" loading="lazy" onError={imgErr} />}
+        <div className="mk-cart-shade" />
         <div className="mk-rar" />
-        {c.momentum >= 85 && <span className="mk-hot">🔥 Hot</span>}
-        <span className={`mk-rtag ${c.rarity}`}>{c.rarity}</span>
+        {c.verified && c.momentum >= 85 && <span className="mk-hot">🔥 Hot</span>}
+        <span className={`mk-rtag ${c.rarity}`}>{c.verified ? c.rarity : "listed"}</span>
         <span className="mk-pill">{c.pillar}</span>
-        <div className="nm">{c.org_name}</div>
+        <div className="mk-namewrap">
+          {c.logo_url && <img className="mk-logo-badge" src={c.logo_url} alt="" onError={imgErr} />}
+          <div className="nm">{c.org_name}</div>
+        </div>
       </div>
       <div className="mk-info">
         <div className="t">{c.headline}</div>
-        <div className="d">{c.summary}</div>
-        <div className="mk-mom"><motion.i initial={{ width: 0 }} animate={{ width: `${c.momentum}%` }} transition={{ duration: .8 }} style={{ display: "block", height: "100%", borderRadius: 5, background: "linear-gradient(90deg,var(--impact),var(--gold))" }} /></div>
-        <div className="mk-row"><span className="bk num">{fmt(c.backers)} backers</span><Link href={`/causes/${c.id}`} style={{ fontSize: 11, color: "var(--ink-dim)" }}>Dossier →</Link></div>
+        <div className="d">{c.blurb || c.summary}</div>
+        {c.verified
+          ? <div className="mk-mom"><motion.i initial={{ width: 0 }} animate={{ width: `${c.momentum}%` }} transition={{ duration: .8 }} style={{ display: "block", height: "100%", borderRadius: 5, background: "linear-gradient(90deg,var(--impact),var(--gold))" }} /></div>
+          : <div className="mk-listbadge">◇ Listed · verification pending</div>}
+        <div className="mk-row"><span className="bk num">{fmt(c.backers)} backers</span><Link href={`/causes/${c.id}`} style={{ fontSize: 11, color: "var(--ink-dim)" }}>Details →</Link></div>
         <div className="mk-row" style={{ marginTop: 8 }}>
-          <span className="pr num">{c.impact?.is_stated && c.impact.unit_cost ? <>{money(c.impact.unit_cost)} <small>{c.impact.unit_label}</small></> : <small>Not yet priced</small>}</span>
+          <span className="pr num">{c.impact?.is_stated && c.impact.unit_cost ? <>{money(c.impact.unit_cost)} <small>{c.impact.unit_label}</small></> : <small className="faint">Any amount</small>}</span>
           <button className="mk-fund" onClick={() => onFund(c, suggested(c))}>Fund</button>
         </div>
       </div>
