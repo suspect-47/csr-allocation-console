@@ -157,6 +157,18 @@
 .mk-sechead h2{font-size:17px; display:flex; align-items:center; gap:9px}
 .mk-chip{font-family:var(--fm); font-size:12px; padding:6px 12px; border-radius:999px; background:var(--glass); border:1px solid var(--stroke); color:var(--ink-dim); cursor:pointer; white-space:nowrap}
 
+/* filter + sort bar */
+.mk-filters{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap}
+.mk-fchips{display:flex; gap:8px; flex-wrap:wrap}
+.mk-fchips button{font-family:var(--fb); font-weight:600; font-size:13px; color:var(--ink-dim); background:var(--glass); border:1px solid var(--stroke); padding:7px 13px; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:.15s}
+.mk-fchips button:hover{color:var(--ink); background:var(--glass-2)}
+.mk-fchips button.on{color:#043; background:var(--impact); border-color:transparent}
+.mk-fchips button span{font-family:var(--fm); font-size:11px; opacity:.7}
+.mk-fchips button:focus-visible,.mk-sort:focus-visible{outline:2px solid var(--impact); outline-offset:2px}
+.mk-sortwrap{display:flex; align-items:center; gap:8px}
+.mk-sortlabel{font-family:var(--fm); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-faint)}
+.mk-sort{font-family:var(--fb); font-size:13px; font-weight:600; color:var(--ink); background:var(--glass); border:1px solid var(--stroke); padding:8px 12px; border-radius:11px; cursor:pointer}
+
 /* pillar tiles */
 .mk-pillars{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px}
 .mk-ptile{aspect-ratio:1.6/1; border-radius:var(--r); padding:15px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; position:relative; overflow:hidden; border:1px solid var(--stroke); color:#fff}

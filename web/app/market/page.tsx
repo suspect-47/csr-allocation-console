@@ -14,7 +14,7 @@ interface Card {
   pillar: string; geography: string; need_type: "acute" | "development";
   rarity: Rarity; verified: boolean; passed: number; unknown: number; momentum: number;
   backers: number; raised: number; impact: Impact | null;
-  image_url: string | null; logo_url: string | null; blurb: string | null;
+  image_url: string | null; logo_url: string | null; blurb: string | null; created_at: string;
 }
 interface Patron { id: string; name: string; impact_points: number; streak_days: number; level: number; level_label: string; xp_into_level: number; xp_for_level: number }
 interface News { source_title: string; source_url: string; excerpt: string; check_name: string; org_name: string }
@@ -23,7 +23,14 @@ interface Org { org_name: string; org_domain: string; logo_url: string | null }
 interface Market { hero: Card | null; cards: Card[]; pillars: { pillar: string; count: number }[]; orgs: Org[]; news: News[]; events: Ev[]; patron: Patron; leaderboard: Patron[] }
 function imgErr(e: { currentTarget: HTMLImageElement }) { e.currentTarget.style.display = "none"; }
 
-const TABS = ["Discover", "Causes", "Events", "News", "Leaderboard"];
+const TABS = ["Causes", "Events", "News", "Leaderboard"];
+const SORTS: { key: string; label: string }[] = [
+  { key: "trending", label: "Trending" },
+  { key: "backed", label: "Most backed" },
+  { key: "newest", label: "Newest" },
+  { key: "az", label: "A–Z" },
+  { key: "verified", label: "Verified first" },
+];
 const fmt = (n: number) => n.toLocaleString("en-US");
 const money = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 const initials = (s: string) => s.split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
@@ -67,8 +74,9 @@ export default function Market() {
   const [m, setM] = useState<Market | null>(null);
   const [cards, setCards] = useState<Card[]>([]);
   const [patron, setPatron] = useState<Patron | null>(null);
-  const [tab, setTab] = useState("Discover");
+  const [tab, setTab] = useState("Causes");
   const [activePillar, setActivePillar] = useState<string | null>(null);
+  const [sort, setSort] = useState("trending");
   const [amount, setAmount] = useState(50);
   const [toasts, setToasts] = useState<{ id: number; node: ReactNode; cls?: string }[]>([]);
   const [funds, setFunds] = useState(0);
@@ -109,7 +117,15 @@ export default function Market() {
     }
   }
 
-  const shown = activePillar ? cards.filter((c) => c.pillar === activePillar) : cards;
+  const shown = (activePillar ? cards.filter((c) => c.pillar === activePillar) : [...cards]).sort((a, b) => {
+    switch (sort) {
+      case "backed": return b.backers - a.backers;
+      case "newest": return (b.created_at || "").localeCompare(a.created_at || "");
+      case "az": return a.org_name.localeCompare(b.org_name);
+      case "verified": return (b.verified ? 1 : 0) - (a.verified ? 1 : 0) || b.momentum - a.momentum;
+      default: return b.momentum - a.momentum || b.backers - a.backers;
+    }
+  });
   const stagger = (i: number) => (reduce ? {} : { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { delay: Math.min(i * 0.04, 0.3), duration: 0.4 } });
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
 
@@ -183,8 +199,21 @@ export default function Market() {
 
           {/* RIGHT */}
           <div className="mk-col">
-            {activePillar && <div style={{ margin: "0 0 4px" }}><span className="mk-chip" onClick={() => setActivePillar(null)}>← All causes · {activePillar} ✕</span></div>}
-            <motion.div id="sec-causes" className="mk-cards" layout={!reduce}>
+            <div id="sec-causes" className="mk-filters">
+              <div className="mk-fchips">
+                <button className={!activePillar ? "on" : ""} onClick={() => setActivePillar(null)}>All <span>{cards.length}</span></button>
+                {m.pillars.map((p) => (
+                  <button key={p.pillar} className={activePillar === p.pillar ? "on" : ""} onClick={() => setActivePillar(activePillar === p.pillar ? null : p.pillar)}>{p.pillar} <span>{p.count}</span></button>
+                ))}
+              </div>
+              <div className="mk-sortwrap">
+                <span className="mk-sortlabel">Sort</span>
+                <select className="mk-sort" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort causes">
+                  {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <motion.div className="mk-cards" layout={!reduce}>
               <AnimatePresence>
                 {shown.map((c, i) => <CauseCard key={c.id} c={c} i={i} reduce={reduce} onFund={fund} />)}
                 {shown.length === 0 && <div className="mk-empty" style={{ gridColumn: "1/-1" }}>No causes in this pillar.</div>}
