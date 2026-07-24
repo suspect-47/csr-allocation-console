@@ -31,7 +31,7 @@ class Settings:
     # need them and are never stored on this object.
     you_search_key_env: str = "YOU_SEARCH_API_KEY"
     you_research_key_env: str = "YOU_RESEARCH_API_KEY"
-    anthropic_key_env: str = "ANTHROPIC_API_KEY"
+    openai_key_env: str = "OPENAI_API_KEY"  # reasoning model (litellm reads this)
 
     @property
     def is_dev(self) -> bool:
@@ -51,7 +51,7 @@ def load_settings() -> Settings:
         you_research_base_url=os.environ.get(
             "YOU_RESEARCH_BASE_URL", "https://api.you.com"
         ),
-        crew_model=os.environ.get("CREW_MODEL", "anthropic/claude-opus-4-8"),
+        crew_model=os.environ.get("CREW_MODEL", "openai/gpt-4o-mini"),
         youcom_cache_ttl_seconds=int(os.environ.get("YOUCOM_CACHE_TTL_SECONDS", "21600")),
     )
 

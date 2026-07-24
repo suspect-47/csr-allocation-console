@@ -18,7 +18,7 @@ completeness everywhere it conflicts.
 |---|---|
 | Agent orchestration | CrewAI — Flows outer, stage functions inner (pinned) |
 | Web retrieval | you.com Search API (discovery) + Research API (verification) |
-| Reasoning model | Claude via CrewAI `llm` param |
+| Reasoning model | OpenAI (`gpt-4o-mini`) via litellm — polishes card copy only (deviation from spec's Claude, per user) |
 | Runtime | Render — web + worker + cron + Postgres + Key Value |
 | CI / gate / deploy trigger | Opsera |
 | Frontend + web API | **Next.js (App Router)** — React UI + `/api` route handlers |

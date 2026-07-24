@@ -9,12 +9,16 @@ manufacturing, no second person, no distress imagery.
 
 Copy is assembled deterministically from the candidate and its evidence rows,
 which guarantees 100% citation coverage (the eval gate's hard requirement).
-An LLM rewrite pass can sit in front of this later; the Pydantic validator
-keeps it honest regardless (see app.clients.llm).
+An optional LLM pass (app.clients.llm, OpenAI via litellm) rewrites the
+headline + summary from the same verified facts; the 3 cited bullets stay
+code-generated and the Pydantic validators enforce length + citations, so the
+LLM can only improve prose, never fabricate or break the contract. If the LLM
+is unavailable or fails, the deterministic copy stands.
 """
 
 from __future__ import annotations
 
+from app.clients import llm
 from app.flow.schemas import (
     Card,
     CardList,
@@ -65,6 +69,15 @@ def compose_card(v: Verdict) -> Card:
     summary = _truncate(
         f"{cand.claim} Cleared for {cand.geography} on verified evidence.", 240
     )
+    # Optional LLM polish of headline + summary from the same verified facts.
+    # Returns None when unavailable/failed → deterministic copy stands.
+    polished = llm.polish_copy(
+        cand.org_name, cand.pillar, cand.geography, cand.claim, [t for t, _ in evidence[:3]]
+    )
+    if polished:
+        headline = _truncate(polished["headline"], 60)
+        summary = _truncate(polished["summary"], 240)
+
     bullets = [EvidenceBullet(text=t, source_url=u) for t, u in evidence[:3]]
 
     card = Card(

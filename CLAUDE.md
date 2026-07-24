@@ -21,7 +21,7 @@ move to Node.
 
 Shared state: **Postgres** (6 tables, `migrations/0001_init.sql`) + **Redis** queue key
 `csr:jobs`. Data flow: `browser → Next /api (enqueue) → run row; worker BRPOP csr:jobs →
-CrewAI flow → you.com/Claude → write Postgres; browser polls /api/runs/:id`.
+CrewAI flow → you.com Research (+ OpenAI for copy only) → write Postgres; browser polls /api/runs/:id`.
 
 ## Layout
 

@@ -1,6 +1,7 @@
 # Pinned intentionally — do NOT float (spec §1 "pin the CrewAI version", §2).
 # Confirm exact patch versions against your package index before first install.
 crewai==0.140.0
+litellm==1.93.0          # used directly by app/clients/llm.py (OpenAI); must satisfy crewai's range
 pydantic==2.10.4
 httpx==0.28.1
 psycopg[binary,pool]==3.2.3
