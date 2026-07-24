@@ -46,10 +46,10 @@ def load_settings() -> Settings:
         ),
         kv_url=os.environ.get("KV_URL", "redis://localhost:6379/0"),
         you_search_base_url=os.environ.get(
-            "YOU_SEARCH_BASE_URL", "https://api.ydc-index.io"
+            "YOU_SEARCH_BASE_URL", "https://ydc-index.io"
         ),
         you_research_base_url=os.environ.get(
-            "YOU_RESEARCH_BASE_URL", "https://api.ydc-index.io"
+            "YOU_RESEARCH_BASE_URL", "https://api.you.com"
         ),
         crew_model=os.environ.get("CREW_MODEL", "anthropic/claude-opus-4-8"),
         youcom_cache_ttl_seconds=int(os.environ.get("YOUCOM_CACHE_TTL_SECONDS", "21600")),
