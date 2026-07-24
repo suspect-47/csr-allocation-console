@@ -12,7 +12,6 @@ imagery for already-cleared causes and gathers a few live events.
 from __future__ import annotations
 
 import sys
-from typing import Any
 
 from app import db
 from app.clients import llm, youcom

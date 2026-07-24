@@ -62,10 +62,12 @@ class SearchHit(BaseModel):
     snippet: str = ""
     thumbnail: str = ""   # you.com thumbnail_url — a representative image
     favicon: str = ""     # you.com favicon_url — the org's logo mark
+    date: str = ""        # page_age (news)
 
 
 class SearchResult(BaseModel):
     hits: list[SearchHit] = Field(default_factory=list)
+    news: list[SearchHit] = Field(default_factory=list)
 
 
 class Citation(BaseModel):
@@ -131,7 +133,22 @@ def _parse_search(raw: dict[str, object]) -> SearchResult:
                     favicon=str(h.get("favicon_url", "") or ""),
                 )
             )
-    return SearchResult(hits=hits)
+    news_raw = results.get("news", []) if isinstance(results, dict) else []
+    news: list[SearchHit] = []
+    if isinstance(news_raw, list):
+        for h in news_raw:
+            if not isinstance(h, dict):
+                continue
+            news.append(
+                SearchHit(
+                    title=str(h.get("title", "")),
+                    url=str(h.get("url", "")),
+                    snippet=str(h.get("description", "") or ""),
+                    thumbnail=str(h.get("thumbnail_url", "") or ""),
+                    date=str(h.get("page_age", "") or ""),
+                )
+            )
+    return SearchResult(hits=hits, news=news)
 
 
 def _parse_research(raw: dict[str, object]) -> ResearchResult:

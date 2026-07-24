@@ -127,7 +127,6 @@ export default function Market() {
       default: return b.momentum - a.momentum || b.backers - a.backers;
     }
   });
-  const stagger = (i: number) => (reduce ? {} : { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { delay: Math.min(i * 0.04, 0.3), duration: 0.4 } });
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
 
   if (!m || !patron) return <div className="mk"><div className="mk-wrap"><div className="mk-empty">Loading the marketplace…</div></div></div>;
@@ -146,7 +145,9 @@ export default function Market() {
           </Link>
           <nav className="mk-nav">
             {TABS.map((t) => (
-              <button key={t} className={tab === t ? "on" : ""} onClick={() => { setTab(t); scrollTo("sec-" + t.toLowerCase()); }}>{t}</button>
+              t === "News"
+                ? <Link key={t} href="/market/news"><button>{t}</button></Link>
+                : <button key={t} className={tab === t ? "on" : ""} onClick={() => { setTab(t); scrollTo("sec-" + t.toLowerCase()); }}>{t}</button>
             ))}
           </nav>
           <div className="mk-spacer" />
@@ -262,18 +263,6 @@ export default function Market() {
                 <button className="mk-btn" style={{ flex: "0 0 auto" }} disabled={!hero} onClick={() => hero && fund(hero, amount)}>Pledge {money(amount)}</button>
               </div>
             </section>
-
-            {/* NEWS */}
-            <div id="sec-news" className="mk-sechead" style={{ marginTop: 2 }}><h2>📰 From the evidence trail</h2><span className="mk-chip">Latest</span></div>
-            <div className="mk-news">
-              {m.news.length ? m.news.map((n, i) => (
-                <motion.a className="mk-ncard mk-glass" key={i} href={n.source_url} target="_blank" rel="noreferrer" {...stagger(i)} {...(reduce ? {} : { whileHover: { y: -3 } })}>
-                  <div className="src"><span className="dot" />{host(n.source_url)}</div>
-                  <h3>{n.source_title}</h3>
-                  <p>{n.excerpt || `${n.org_name} · ${n.check_name.replace(/_/g, " ")}`}</p>
-                </motion.a>
-              )) : <div className="mk-empty" style={{ gridColumn: "1/-1" }}>News appears from the verification evidence trail.</div>}
-            </div>
           </div>
         </div>
 

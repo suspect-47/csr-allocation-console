@@ -197,6 +197,23 @@ export async function causeDetail(id: string) {
   };
 }
 
+export interface NewsItem {
+  id: string; kind: "article" | "video"; title: string; source: string | null; url: string;
+  image_url: string | null; excerpt: string | null; published: string | null; pillar: string | null; video_id: string | null;
+}
+
+export async function newsFeed() {
+  const rows = await q<NewsItem>(
+    `select id, kind, title, source, url, image_url, excerpt, published, pillar, video_id
+     from news_items order by created_at desc`
+  );
+  return {
+    articles: rows.filter((r) => r.kind === "article"),
+    videos: rows.filter((r) => r.kind === "video"),
+    pillars: Array.from(new Set(rows.map((r) => r.pillar).filter(Boolean))) as string[],
+  };
+}
+
 const sameUtcDay = (a: Date, b: Date) =>
   a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth() && a.getUTCDate() === b.getUTCDate();
 
