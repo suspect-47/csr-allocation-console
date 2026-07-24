@@ -1,36 +1,35 @@
-/* KEYSTONE marketplace — glassmorphism, scoped under .mk (no collision with the
-   operator console's globals.css). Committed blue world with a light "day" variant. */
+/* YourDues marketplace — glassmorphism, scoped under .mk (no collision with the
+   operator console's globals.css). Light emerald default; dark emerald toggle.
+   Fonts: Lexend. */
 
 .mk{
-  --bg-0:#071B33; --bg-1:#0E3A66; --bg-2:#1C6FB8;
-  --ink:#EAF2FF; --ink-dim:rgba(234,242,255,.62); --ink-faint:rgba(234,242,255,.40);
-  --glass:rgba(255,255,255,.08); --glass-2:rgba(255,255,255,.14); --glass-3:rgba(255,255,255,.20);
-  --stroke:rgba(255,255,255,.16); --stroke-hi:rgba(255,255,255,.34);
-  --accent:#3E8BFF; --accent-2:#7FB4FF; --impact:#35E3C2; --gold:#FFC24B; --violet:#8A7BFF; --coral:#FF6F6B;
-  --shadow:0 14px 44px rgba(3,14,30,.45); --r:20px; --r-sm:14px;
-  --fd:"Sora","SF Pro Display","Segoe UI",system-ui,sans-serif;
-  --fb:"Instrument Sans","SF Pro Text",system-ui,sans-serif;
+  --bg-0:#e8f3ec; --bg-1:#f3f9f5; --bg-2:#dcefe3;
+  --ink:#0f291f; --ink-dim:rgba(15,41,31,.62); --ink-faint:rgba(15,41,31,.42);
+  --glass:rgba(255,255,255,.66); --glass-2:rgba(255,255,255,.82); --glass-3:rgba(255,255,255,.95);
+  --stroke:rgba(15,41,31,.10); --stroke-hi:rgba(15,41,31,.20);
+  --accent:#10b981; --accent-2:#34d399; --impact:#059669; --gold:#d97706; --violet:#7c3aed; --coral:#dc2626;
+  --glow-a:rgba(52,211,153,.30); --glow-b:rgba(16,185,129,.16); --glow-c:rgba(110,231,183,.28);
+  --shadow:0 14px 40px rgba(16,110,74,.14); --r:20px; --r-sm:14px;
+  --fd:"Lexend","SF Pro Display","Segoe UI",system-ui,sans-serif;
+  --fb:"Lexend","SF Pro Text",system-ui,sans-serif;
   --fm:"IBM Plex Mono","SF Mono",ui-monospace,monospace;
   --fh:"Caveat","Gochi Hand",cursive;
   color:var(--ink); font-family:var(--fb); font-size:15px; line-height:1.5;
   min-height:100vh; position:relative; overflow-x:hidden; -webkit-font-smoothing:antialiased;
   background:
-    radial-gradient(1100px 700px at 82% -8%, rgba(126,180,255,.42), transparent 60%),
-    radial-gradient(900px 620px at 8% 12%, rgba(53,227,194,.20), transparent 55%),
-    radial-gradient(760px 760px at 60% 108%, rgba(62,139,255,.34), transparent 60%),
-    linear-gradient(160deg,var(--bg-1),var(--bg-0) 68%);
+    radial-gradient(1100px 700px at 82% -8%, var(--glow-a), transparent 60%),
+    radial-gradient(900px 620px at 8% 12%, var(--glow-b), transparent 55%),
+    radial-gradient(760px 760px at 60% 108%, var(--glow-c), transparent 60%),
+    linear-gradient(160deg,var(--bg-1),var(--bg-0) 70%);
 }
-@media (prefers-color-scheme:light){ :root:not([data-theme="dark"]) .mk{
-  --bg-0:#DCEBFF; --bg-1:#A9CCFF; --bg-2:#5E9AF0;
-  --ink:#0A2544; --ink-dim:rgba(10,37,68,.66); --ink-faint:rgba(10,37,68,.45);
-  --glass:rgba(255,255,255,.52); --glass-2:rgba(255,255,255,.66); --glass-3:rgba(255,255,255,.82);
-  --stroke:rgba(255,255,255,.85); --stroke-hi:#fff; --shadow:0 14px 40px rgba(30,80,150,.22);
-}}
-:root[data-theme="light"] .mk{
-  --bg-0:#DCEBFF; --bg-1:#A9CCFF; --bg-2:#5E9AF0;
-  --ink:#0A2544; --ink-dim:rgba(10,37,68,.66); --ink-faint:rgba(10,37,68,.45);
-  --glass:rgba(255,255,255,.52); --glass-2:rgba(255,255,255,.66); --glass-3:rgba(255,255,255,.82);
-  --stroke:rgba(255,255,255,.85); --stroke-hi:#fff; --shadow:0 14px 40px rgba(30,80,150,.22);
+:root[data-theme="dark"] .mk{
+  --bg-0:#08211a; --bg-1:#0d3128; --bg-2:#124b3c;
+  --ink:#e7f5ee; --ink-dim:rgba(231,245,238,.62); --ink-faint:rgba(231,245,238,.40);
+  --glass:rgba(255,255,255,.07); --glass-2:rgba(255,255,255,.13); --glass-3:rgba(255,255,255,.20);
+  --stroke:rgba(255,255,255,.14); --stroke-hi:rgba(255,255,255,.30);
+  --accent:#10b981; --accent-2:#34d399; --impact:#34d399; --gold:#fbbf24; --violet:#a78bfa; --coral:#f87171;
+  --glow-a:rgba(16,185,129,.30); --glow-b:rgba(52,211,153,.16); --glow-c:rgba(16,120,80,.42);
+  --shadow:0 14px 44px rgba(0,18,10,.5);
 }
 
 .mk *{box-sizing:border-box}
@@ -73,7 +72,6 @@
 .mk-patron{display:flex; align-items:center; gap:10px; padding:6px 10px 6px 6px; border-radius:14px; background:var(--glass-2); border:1px solid var(--stroke)}
 .mk-ring{width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(var(--gold) calc(var(--p,0)*1%), rgba(255,255,255,.16) 0); transition:background .8s cubic-bezier(.2,.7,.2,1)}
 .mk-ring .disc{width:31px; height:31px; border-radius:50%; background:var(--bg-0); display:grid; place-items:center; font-family:var(--fd); font-weight:800; font-size:13px}
-:root[data-theme="light"] .mk-ring .disc{background:#eaf2ff}
 .mk-patron .who b{font-family:var(--fd); font-weight:700; font-size:13px; line-height:1.1}
 .mk-patron .who small{display:block; font-family:var(--fm); font-size:11px; color:var(--impact)}
 
@@ -113,7 +111,7 @@
 .mk-price .match{margin-left:auto; font-family:var(--fm); font-size:12px; font-weight:700; color:#043; background:var(--impact); padding:5px 10px; border-radius:999px}
 .mk-cta{display:flex; gap:10px}
 .mk-btn{font-family:var(--fd); font-weight:700; font-size:15px; border:none; cursor:pointer; padding:13px 20px; border-radius:14px;
-  background:linear-gradient(120deg,var(--accent),#2f6fe0); color:#fff; box-shadow:0 10px 26px rgba(62,139,255,.45); flex:1}
+  background:linear-gradient(120deg,var(--accent),#059669); color:#fff; box-shadow:0 10px 24px rgba(16,150,105,.4); flex:1}
 .mk-btn.ghost{background:var(--glass-2); color:var(--ink); box-shadow:none; border:1px solid var(--stroke-hi); flex:0 0 auto}
 .mk-btn:focus-visible,.mk-nav button:focus-visible,.mk-chip:focus-visible,.mk-fund:focus-visible,.mk-ptile:focus-visible{outline:2px solid var(--impact); outline-offset:2px}
 
@@ -262,7 +260,7 @@
 .mk-readmore{font-family:var(--fd); font-weight:700; font-size:14px; color:var(--impact)}
 .mk-newsgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px}
 .mk-newscard{padding:0; overflow:hidden; text-decoration:none; display:flex; flex-direction:column}
-.mk-newscard-img{position:relative; aspect-ratio:16/9; overflow:hidden; background:linear-gradient(150deg,#0e3a66,#071b33)}
+.mk-newscard-img{position:relative; aspect-ratio:16/9; overflow:hidden; background:linear-gradient(150deg,#cdeadb,#a7d3bd)}
 .mk-newscard-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .mk-newscard-body{padding:13px 14px 15px; display:flex; flex-direction:column; flex:1}
 .mk-newscard-body h3{font-size:15px; line-height:1.25; margin-bottom:6px}
