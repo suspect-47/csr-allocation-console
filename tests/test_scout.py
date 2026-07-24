@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 from app.flow.schemas import Candidate, NeedType
-from app.flow.scout import _clean_org_name, _dedupe, is_org_domain, registrable_domain
+from app.flow.scout import (
+    _dedupe,
+    is_org_domain,
+    org_name_from_domain,
+    registrable_domain,
+)
 
 
 def test_registrable_domain_strips_www() -> None:
@@ -11,10 +16,10 @@ def test_registrable_domain_strips_www() -> None:
     assert registrable_domain("not-a-url") is None
 
 
-def test_clean_org_name_takes_first_segment() -> None:
-    assert _clean_org_name("Help Org | Donate") == "Help Org"
-    assert _clean_org_name("Help Org - Home") == "Help Org"
-    assert _clean_org_name("Help Org") == "Help Org"
+def test_org_name_from_domain() -> None:
+    # Identity comes from the domain, not a deep page's title.
+    assert org_name_from_domain("watermission.org") == "Watermission"
+    assert org_name_from_domain("water-is-life.org") == "Water Is Life"
 
 
 def _cand(name: str, domain: str | None) -> Candidate:
@@ -39,3 +44,8 @@ def test_is_org_domain_filters_non_orgs() -> None:
     for d in ("guidestar.org", "youtube.com", "nytimes.com", "gofundme.com", "wikipedia.org"):
         assert is_org_domain(d) is False
     assert is_org_domain("amp.cnn.com") is False  # subdomain of a non-org domain
+
+
+def test_government_domains_excluded() -> None:
+    for d in ("makueni.go.ke", "irs.gov", "charitycommission.gov.uk", "army.mil"):
+        assert is_org_domain(d) is False

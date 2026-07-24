@@ -9,6 +9,7 @@ adds no model guesswork before verification.
 
 from __future__ import annotations
 
+import re
 from urllib.parse import urlparse
 
 from rapidfuzz import fuzz
@@ -66,6 +67,9 @@ NON_ORG_DOMAINS = frozenset(
 _NAME_MATCH_THRESHOLD = 90  # rapidfuzz token_sort_ratio
 
 
+_GOV_RE = re.compile(r"\.gov$|\.gov\.[a-z]{2,3}$|\.go\.[a-z]{2}$|\.mil$|\.gouv\.")
+
+
 def _matches(domain: str, blocklist: frozenset[str]) -> bool:
     return any(domain == d or domain.endswith("." + d) for d in blocklist)
 
@@ -74,7 +78,16 @@ def is_org_domain(domain: str | None) -> bool:
     """A candidate must have a domain that is plausibly the org's own site."""
     if not domain:
         return False
+    if _GOV_RE.search(domain):  # government sites are not nonprofits
+        return False
     return not _matches(domain, FUNDRAISING_PLATFORMS) and not _matches(domain, NON_ORG_DOMAINS)
+
+
+def org_name_from_domain(domain: str) -> str:
+    """The org's identity is its domain, not a deep page's title. Derive a clean
+    name from the second-level label; verify keys off the domain regardless."""
+    label = domain.split(".")[0]
+    return label.replace("-", " ").replace("_", " ").title() or domain
 
 
 def registrable_domain(url: str) -> str | None:
@@ -83,15 +96,6 @@ def registrable_domain(url: str) -> str | None:
         return None
     host = host.removeprefix("www.")
     return host or None
-
-
-def _clean_org_name(title: str) -> str:
-    # Titles are commonly "Org Name | Home" or "Org Name - Donate". Take the
-    # first segment; never invent a name the source did not carry.
-    for sep in (" | ", " – ", " — ", " - ", ": "):
-        if sep in title:
-            return title.split(sep, 1)[0].strip()
-    return title.strip()
 
 
 def _pair_query(pillar: str, geography: str, need_type: NeedType) -> str:
@@ -142,11 +146,11 @@ def run_scout(state: FlowState) -> CandidateList:
                 # Only propose hits that are plausibly the org's own site. News,
                 # social, directories, and fundraising platforms are coverage or
                 # listings — evidence for verify, not candidates.
-                if not is_org_domain(domain):
+                if domain is None or not is_org_domain(domain):
                     continue
                 raw.append(
                     Candidate(
-                        org_name=_clean_org_name(hit.title) or domain or "Unknown",
+                        org_name=org_name_from_domain(domain),
                         org_domain=domain,
                         claim=hit.snippet.strip(),
                         source_url=hit.url,
