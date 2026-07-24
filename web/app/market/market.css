@@ -241,6 +241,9 @@
 .mk-ptile.disaster,.mk-ptile.other{background:linear-gradient(150deg,#d1662f,#7a2e1a)}
 
 /* orgs */
+.mk-orgstrip{margin-bottom:18px}
+.mk-orgstrip-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 2px 10px}
+.mk-orgstrip-head h2{font-size:17px}
 .mk-orgs{display:flex; gap:16px; overflow-x:auto; padding:14px}
 .mk-org{flex:0 0 auto; width:66px; text-align:center; cursor:pointer}
 .mk-org .av{width:56px; height:56px; border-radius:17px; display:grid; place-items:center; font-family:var(--fd); font-weight:800; font-size:18px; color:#fff; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.25)}

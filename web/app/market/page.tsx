@@ -178,6 +178,23 @@ export default function Market() {
           </div>
         </motion.header>
 
+        {/* TRENDING ORGS — top strip under the header */}
+        {m.orgs.length > 0 && (
+          <div className="mk-orgstrip">
+            <div className="mk-orgstrip-head"><h2>Trending orgs</h2><span className="mk-chip">Verified partners</span></div>
+            <div className="mk-orgs mk-glass">
+              {m.orgs.map((o) => (
+                <a className="mk-org" key={o.org_domain} href={`https://${o.org_domain}`} target="_blank" rel="noreferrer" title={o.org_name}>
+                  <div className="av" style={{ background: grad(o.org_name) }}>
+                    {o.logo_url ? <img src={o.logo_url} alt="" onError={imgErr} /> : initials(o.org_name)}
+                  </div>
+                  <small>{o.org_name}</small>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* FILTER + SORT — own full-width row */}
         <div id="sec-causes" className="mk-filters">
           <div className="mk-fchips">
@@ -236,20 +253,6 @@ export default function Market() {
               </AnimatePresence>
             </motion.div>
 
-            {/* TRENDING ORGS */}
-            {m.orgs.length > 0 && <>
-              <div className="mk-sechead" style={{ marginTop: 2 }}><h2>Trending orgs</h2><span className="mk-chip">Verified</span></div>
-              <div className="mk-orgs mk-glass">
-                {m.orgs.map((o) => (
-                  <a className="mk-org" key={o.org_domain} href={`https://${o.org_domain}`} target="_blank" rel="noreferrer" title={o.org_name}>
-                    <div className="av" style={{ background: grad(o.org_name) }}>
-                      {o.logo_url ? <img src={o.logo_url} alt="" onError={imgErr} /> : initials(o.org_name)}
-                    </div>
-                    <small>{o.org_name}</small>
-                  </a>
-                ))}
-              </div>
-            </>}
 
             {/* WALLET */}
             <section className="mk-wallet mk-glass">
