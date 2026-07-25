@@ -1,14 +1,22 @@
-# CSR Allocation Console
+# YourDues — Social Cause Marketplace
 
-A corporate-giving lead sets pillars, geography, and a quarterly budget. A
-multi-agent system continuously finds emerging charitable needs on the open web,
-**independently verifies each one**, publishes only what clears, and proposes a
-budget allocation with a sourced rationale.
+**Live: [yourdues-web.onrender.com/market](https://yourdues-web.onrender.com/market)**
 
-The product thesis is **verification, not discovery**. Discovery is a search
-query; verification is why this needs agents. Nothing in this system estimates,
-infers, or fills in a number a source did not state — that rule outranks
-completeness everywhere it conflicts.
+A donor-facing marketplace of charitable causes where **every cause carries an
+evidence chain**. A multi-step pipeline finds emerging needs on the open web,
+**independently verifies each one** (you.com Research, ×6 checks), and only what
+clears — or is a real, listed org — reaches the storefront. Donors browse
+image-rich cause cards, pledge, earn Impact Points, and follow live events and
+news; they can also **search the web live** and **draft a fundable cause from any
+story with AI**.
+
+Product thesis: **verification, not discovery.** Discovery is a search query;
+verification is why this needs agents. Nothing here estimates, infers, or fills
+in a number a source did not state — that rule outranks completeness.
+
+> Started as an internal **CSR allocation console**; pivoted to a donor-facing
+> marketplace on top of the same verification pipeline. The operator console
+> (`/`, allocation bar, dossiers) still ships under `web/app/(site)`.
 
 ---
 
@@ -16,151 +24,127 @@ completeness everywhere it conflicts.
 
 | Concern | Tool |
 |---|---|
-| Orchestration | Deterministic Python pipeline (CrewAI dropped — see note) |
-| Web retrieval / verification | you.com Search API (discovery) + Research API (verification) |
-| Reasoning model | OpenAI (`gpt-4o-mini`) via litellm — polishes card copy only (deviation from spec's Claude, per user) |
-| Runtime | Render — web + worker + cron + Postgres + Key Value |
-| CI / gate / deploy trigger | Opsera |
-| Frontend + web API | **Next.js (App Router)** — React UI + `/api` route handlers |
-| Agent flow | **Python worker + cron** — sequential pipeline |
+| Frontend + web API | **Next.js (App Router)** — React UI + `/api/*` route handlers |
+| Cause verification | **Python** deterministic pipeline (`app/flow/`) |
+| Web retrieval | **you.com** — Search (discovery, live news, org/image gathering) + Research (×6 verification) |
+| Reasoning model | **OpenAI** `gpt-4o-mini` via litellm — card copy + "draft a fund from news" |
+| Shared state | **Postgres** (6+ tables) + **Redis** queue (`csr:jobs`) |
+| Runtime | **Render** — web + Postgres + Key Value (worker + cron optional, paid) |
+| Fonts / look | Lexend + Pacifico wordmark; light-emerald liquid-glass bento UI |
 
-> **CrewAI was dropped.** It only wrapped the deterministic stage functions in a
-> `Flow` skeleton and added a heavy dependency (plus a litellm pin conflict) for
-> no behavioural difference — the pure executor already produced identical runs.
-> The genuine "agents" are the you.com Research calls (multi-source verification)
-> and the OpenAI copy pass; decisions are code (spec §8). Deviates from spec §1.
+### Architecture — two apps, one database
 
-### Architecture: Next.js front + back, Python pipeline
+`web/` is a **Next.js** app: renders the marketplace UI **and** serves `/api/*`
+(reads Postgres, enqueues jobs, live you.com news search, OpenAI fund drafting).
+The **Python worker** runs the verification pipeline off the `csr:jobs` queue;
+**cron** enqueues discovery. Web enqueues, worker executes — the flow never runs
+inside an HTTP request. The pipeline stays Python because that is where the
+verify logic and tests live.
 
-`web/` is a **Next.js** app: it renders the React UI **and** serves the `/api/*`
-route handlers (reads Postgres, enqueues jobs). The **Python worker** runs the
-verification pipeline; **cron** enqueues discovery. Web and worker share one
-Postgres and one Redis queue (`csr:jobs`) — "web enqueues, worker executes". The
-pipeline stays Python because that is where the verify logic and tests live.
-
-### The one boundary that matters
-
-**Opsera owns the gate. Render owns the runtime.** Every Render service has
-`autoDeploy: false`; deploys happen **only** via the Render deploy hook, called
-as the final Opsera stage. Do not enable Opsera VIBEshift for steady-state
-deploys — it provisions its own infra and duplicates the Render services.
-
-The flow never runs inside an HTTP request. **Web (Next.js) enqueues, worker
-executes, UI polls** `/api/runs/{id}`.
+```text
+browser → Next /api (enqueue) → run row
+worker BRPOP csr:jobs → pipeline (you.com Research + OpenAI) → write Postgres
+browser polls /api/runs/:id   ·   marketplace reads /api/market
+```
 
 ---
 
-## Local development
+## What's in the marketplace
+
+- **Causes** — verified + listed orgs as bento cards with real images/logos,
+  rarity (verification strength), momentum, backers, pillar filter + sort.
+- **Trending orgs** — real orgs (you.com), transparent logos.
+- **Live events** — real events with thumbnails backfilled per event.
+- **News & stories** — gathered articles + videos, **live web search** on demand,
+  and **✨ Create fund** — OpenAI drafts a fundable cause from any story.
+- **Gamification** — Impact Points, level, streak + daily quests, leaderboard.
+- **Pledge** — records a pledge, awards points (allocation → pledge, no checkout).
+
+Routes: `/market`, `/market/news`, `/market/causes/:id`. Operator console lives
+at `/`, `/causes/:id`, `/ledger`, `/runs/:id`, `/profile`.
+
+---
+
+## Local development (native)
 
 ```bash
-cp .env.example .env          # fill keys when you have them; blanks are fine to boot
-docker compose up --build     # db + kv + migrate (one-shot) + web (Next) + worker
-# open http://localhost:8000  → lands on /profile on a clean install
-docker compose run --rm cron  # enqueue a discovery run (or click "Run discovery")
+# infra
+brew services start postgresql@16 redis      # or docker compose up db kv
+createdb causes                               # DATABASE_URL=postgresql://.../causes
+
+# secrets — names only, never logged. NEVER commit .env (public repo).
+cp .env.example .env    # YOU_SEARCH_API_KEY, YOU_RESEARCH_API_KEY, OPENAI_API_KEY, DATABASE_URL, KV_URL
+
+# python engine
+python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+python -m scripts.migrate                     # apply migrations/000*.sql
+
+# gather real marketplace data (you.com + OpenAI)
+python -m scripts.gather_catalog              # orgs + cleared/listed causes + events + images
+python -m scripts.gather_news                 # articles + videos
+python -m scripts.backfill_event_images       # event thumbnails
+
+# web (UI + /api) on :8000
+cd web && npm install && npm run dev
 ```
 
-Frontend + API hot reload (needs db + kv + worker running; worker applies
-migrations at startup):
+Full stack in Docker: `docker compose up --build` (db + kv + migrate + web +
+worker). Enqueue a run: `docker compose run --rm cron`.
+
+### Verify (local stop-condition)
 
 ```bash
-cd web && npm install && npm run dev   # http://localhost:8000 (UI + /api)
-```
-
-### Verify (the local stop-condition, mirrors the Opsera gate minus deploy)
-
-```bash
-make verify                       # ruff + mypy + pytest (Python)
+make verify                                    # ruff + mypy + pytest (Python)
 cd web && npm run typecheck && npm run build   # Next.js (tsc strict + build)
 ```
 
 ---
 
-## ⚠️ Build status — read this
+## Deploy on Render
 
-This repo was built **offline, without live credentials** (a deliberate choice —
-see below). Two things follow, both intentional and documented in-code:
+Blueprint in [`render.yaml`](render.yaml): **web** (Docker, `Dockerfile.web`) +
+**Postgres** + **Key Value**, plus optional **worker**/**cron** (paid). Secrets
+live in the `csr-secrets` env group (`sync:false` — set values in the dashboard).
 
-1. **you.com client is flagged `VERIFY`.** Spec §2 says derive the client from
-   the live docs; doc access was unavailable at build time. `app/clients/youcom.py`
-   has env-configurable base URLs / auth header and a tolerant response parser,
-   wrapped in a `VERIFY against live docs` banner. Confirm these before the first
-   live call:
-   - `docs.you.com/api-reference/search/v1-search`
-   - `you.com/docs/api-reference/research/v1-research`
-   - adjust `YOU_SEARCH_BASE_URL` / `YOU_RESEARCH_BASE_URL` in `.env`, and
-     `AUTH_HEADER` / the field names in `_parse_search` / `_parse_research`.
+1. **New → Blueprint** → connect the repo → apply. Enter the 3 secret keys.
+2. Migrations run at worker startup (or `python -m scripts.migrate` against the DB).
+3. Seed the DB with gathered data, then open the web URL → `/market`.
 
-2. **The eval gate is red until you record real captures.** Fixtures follow the
-   no-fake rule: `tests/fixtures/records.json` holds test specs; the real API
-   captures in `tests/fixtures/captures/` do **not** exist yet, so
-   `python -m scripts.eval_gate` exits non-zero by design. See
-   `tests/fixtures/README.md`.
+Notes:
 
-3. **Pinned versions are intentional** (`requirements.txt`) — confirm exact
-   patch versions against your index.
-
-The offline-buildable code (schemas, verify logic, allocation constraints,
-cache, scout dedupe, API, SPA) is covered by `pytest` and can be run with
-`make verify`. The credentialed paths (steps 2, 4, 5 in §9) need keys.
+- Web binds `0.0.0.0:10000` (`Dockerfile.web`) so Render's router reaches Next
+  standalone; health check is `/api/healthz`.
+- Free web hibernates when idle → first request cold-starts (~30–60 s).
+- Render API-created Postgres defaults to an **empty IP allow-list** (no external
+  access) — open it temporarily only to seed, then re-lock.
 
 ---
 
-## Bringing it live
+## Hard rules (enforced in code, not prompts)
 
-1. Put keys in `.env`: `YOU_SEARCH_API_KEY`, `YOU_RESEARCH_API_KEY`,
-   `OPENAI_API_KEY`. Code references names only — never logs values.
-2. Confirm the you.com client `VERIFY` items above.
-3. Record fixtures (needs keys; replace the four `bad-*` placeholders with real
-   known-bad orgs first):
-   ```bash
-   python -m scripts.record_fixtures
-   python -m scripts.eval_gate      # now green
-   ```
-
----
-
-## First-run path (spec §10 — nothing is pre-inserted)
-
-Empty database → `/profile` setup → **Run discovery** → worker runs the flow →
-console fills from an empty database with zero manual row insertion.
-
-```
-/           allocation console — budget bar, cleared cards, commit → pledge sheet
-/causes/:id dossier — full evidence chain, all six checks, every source link
-/ledger     did not clear — blocked causes with the failing check named
-/runs/:id   run trace — flow stages, timings, tool-call counts, live status
-/profile    pillar / geography / budget setup (clean install lands here)
-```
-
-The signature element is the **allocation bar**: drag a segment edge to
-rebalance, the adjacent segment compensates, the unallocated remainder stays a
-visible hatched region. Verification state is encoded as **texture + color**
-(solid = cleared, diagonal hatch = a check returned unknown) — never color alone.
-
----
+- **No fabricated numbers.** Impact cost is null unless a source stated it
+  (`ImpactUnit.is_stated`; Pydantic validator + Postgres CHECK). Never divide
+  budget by beneficiaries.
+- **No seed/mock/sample cause data.** Every cause arrives through the pipeline
+  or `gather_*` with an evidence row. A cause with no evidence is a bug.
+- **Decisions in code.** Verdict rule (`decide_verdict`), allocation constraints
+  (≤40% cap, ≥20% development, visible remainder), citation coverage — code +
+  validators. The you.com Research calls are the "agentic" work.
+- **A check with no source URL is `unknown`, never `pass`.**
 
 ## The flow (`app/flow/`)
 
-```
+```text
 scout    → candidates   (Search; proposes, never judges)
 verify   → verdicts     (Research ×6 per candidate; the core)
-route    → cleared / blocked   (plain conditional)
+route    → cleared / blocked
 score    → impacts      (stated unit cost only, else null)
 compose  → cards        (every claim cited + optional OpenAI polish)
 allocate → sheet        (≤40% cap, ≥20% development, remainder visible)
 ```
 
-Verdict rule, impact fabrication guard, citation coverage, and allocation
-constraints are enforced **in code** (Pydantic validators + `decide_verdict`),
-never left to the model — the eval gate replays real captures and fails the
-build if any known-bad clears, if a legit fixture is over-blocked, if citation
-coverage drops below 100%, or if the fabrication guard is removed.
+## Non-goals (not built, by design)
 
----
-
-## Non-goals (not built, by design — spec §0)
-
-No payments/Stripe/checkout (allocation → pledge sheet only). No auth/signup. No
-seeded/mock/sample cause data — every cause carries an evidence chain. No admin
-panel, CMS, settings page, email, notifications, webhooks-out, multi-tenancy,
-RBAC, or audit log beyond the evidence tables. No mobile app — responsive web.
+No payments/Stripe/checkout (pledge sheet only). No auth/signup. No admin/CMS/
+settings, email, notifications, webhooks-out, multi-tenancy, RBAC. No mobile app
+— responsive web.
