@@ -78,13 +78,16 @@ export default function Market() {
   const [sort, setSort] = useState("trending");
   const [questsOpen, setQuestsOpen] = useState(false);
   const [amount, setAmount] = useState(50);
+  const [walletId, setWalletId] = useState("");
+  const [loadErr, setLoadErr] = useState(false);
   const [toasts, setToasts] = useState<{ id: number; node: ReactNode; cls?: string }[]>([]);
   const [funds, setFunds] = useState(0);
   const tid = useRef(0);
 
-  const load = () => fetch("/api/market", { cache: "no-store" }).then((r) => r.json()).then((d: Market) => {
-    setM(d); setCards(d.cards); setPatron(d.patron);
-  });
+  const load = () => fetch("/api/market", { cache: "no-store" })
+    .then((r) => { if (!r.ok) throw new Error(`market ${r.status}`); return r.json(); })
+    .then((d: Market) => { setM(d); setCards(d.cards); setPatron(d.patron); setLoadErr(false); })
+    .catch(() => setLoadErr(true));
   useEffect(() => { load(); }, []);
 
   const ip = useCountUp(patron?.impact_points ?? 0, reduce);
@@ -131,9 +134,12 @@ export default function Market() {
   });
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
 
+  if (loadErr) return <div className="mk"><div className="mk-wrap"><div className="mk-empty">Couldn’t load the marketplace. <button className="mk-chip" style={{ marginTop: 10 }} onClick={() => load()}>Retry</button></div></div></div>;
   if (!m || !patron) return <div className="mk"><div className="mk-wrap"><div className="mk-empty">Loading the marketplace…</div></div></div>;
 
   const hero = m.hero;
+  const walletCauses = hero ? [hero, ...cards.filter((c) => c.id !== hero.id)] : cards;
+  const walletCause = walletCauses.find((c) => c.id === (walletId || hero?.id)) ?? walletCauses[0] ?? null;
   const xpPct = Math.round((patron.xp_into_level / patron.xp_for_level) * 100);
 
   return (
@@ -267,11 +273,10 @@ export default function Market() {
                   <div key={a} className={`mk-chip ${amount === a ? "on" : ""}`} onClick={() => setAmount(a)}>{money(a)}</div>
                 ))}
               </div>
-              <input className="mk-field" defaultValue={hero?.org_name ?? ""} placeholder="Choose a cause…" aria-label="Cause" />
-              <div className="mk-wrow">
-                <input className="mk-field" placeholder="Match code (2× your impact)" aria-label="Match code" />
-                <button className="mk-btn" style={{ flex: "0 0 auto" }} disabled={!hero} onClick={() => hero && fund(hero, amount)}>Pledge {money(amount)}</button>
-              </div>
+              <select className="mk-field" value={walletId || hero?.id || ""} onChange={(e) => setWalletId(e.target.value)} aria-label="Choose a cause">
+                {walletCauses.map((c) => <option key={c.id} value={c.id}>{c.org_name}</option>)}
+              </select>
+              <button className="mk-btn" disabled={!walletCause} onClick={() => walletCause && fund(walletCause, amount)}>Pledge {money(amount)}{walletCause ? ` to ${walletCause.org_name}` : ""}</button>
             </section>
            </div>
           </div>
@@ -429,4 +434,3 @@ function grad(name: string): string {
   const a = h, b = (h + 40) % 360;
   return `linear-gradient(150deg, hsl(${a} 55% 32%), hsl(${b} 60% 18%))`;
 }
-function host(u: string): string { try { return new URL(u).host.replace(/^www\./, ""); } catch { return "source"; } }

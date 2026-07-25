@@ -39,10 +39,14 @@ export default function CausePage() {
   const [amount, setAmount] = useState(50);
   const [backers, setBackers] = useState(0);
   const [note, setNote] = useState("");
+  const [err, setErr] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/market/cause/${id}`, { cache: "no-store" }).then((r) => r.json()).then((x: Detail) => { setD(x); setBackers(x.cause.backers); });
+    fetch(`/api/market/cause/${encodeURIComponent(id)}`, { cache: "no-store" })
+      .then((r) => { if (!r.ok) throw new Error(`cause ${r.status}`); return r.json(); })
+      .then((x: Detail) => { setD(x); setBackers(x.cause.backers); })
+      .catch(() => setErr(true));
   }, [id]);
 
   async function fund() {
@@ -58,6 +62,7 @@ export default function CausePage() {
     } catch { setBackers((b) => Math.max(0, b - 1)); setNote("Could not record pledge"); }
   }
 
+  if (err) return <div className="mk"><div className="mk-wrap"><div className="mk-empty">Cause not found. <Link className="mk-chip" href="/market" style={{ display: "inline-block", marginTop: 10 }}>← Back to marketplace</Link></div></div></div>;
   if (!d) return <div className="mk"><div className="mk-wrap"><div className="mk-empty">Loading cause…</div></div></div>;
   const c = d.cause;
 

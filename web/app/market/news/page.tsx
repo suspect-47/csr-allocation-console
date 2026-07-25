@@ -74,7 +74,12 @@ export default function News() {
   const [toasts, setToasts] = useState<{ id: number; node: ReactNode }[]>([]);
   const tidRef = useRef(0);
 
-  useEffect(() => { fetch("/api/market/news", { cache: "no-store" }).then((r) => r.json()).then(setF); }, []);
+  useEffect(() => {
+    fetch("/api/market/news", { cache: "no-store" })
+      .then((r) => r.json())
+      .then(setF)
+      .catch(() => setF({ articles: [], videos: [], pillars: [] }));
+  }, []);
 
   function toast(node: ReactNode) {
     const id = ++tidRef.current;
@@ -89,6 +94,7 @@ export default function News() {
     setSearching(true); setResults([]);
     try {
       const r = await fetch(`/api/market/news/search?q=${encodeURIComponent(q)}`, { cache: "no-store" });
+      if (!r.ok) throw new Error(`search ${r.status}`);
       const d = await r.json();
       setResults(d.results ?? []);
     } catch { setResults([]); toast("Search failed"); }

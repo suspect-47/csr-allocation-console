@@ -48,21 +48,9 @@
 /* top bar */
 .mk-top{position:sticky; top:12px; z-index:40; display:flex; align-items:center; gap:16px; padding:12px 16px; margin-bottom:20px}
 .mk-brand{display:flex; align-items:center; gap:10px}
-.mk-logo{width:58px; height:58px; display:grid; place-items:center; background:none; border:none; box-shadow:none; margin:-6px 0}
-.mk-logo svg{display:block; filter:drop-shadow(0 4px 8px rgba(60,40,20,.22))}
 .mk-brand b{font-family:var(--fh); font-weight:400; font-size:26px; letter-spacing:.5px; display:block; line-height:1.18; color:#059669; padding-right:2px; text-transform:none}
 :root[data-theme="dark"] .mk .mk-brand b{color:#34d399}
 
-/* memoji capybara — idle motion */
-.cap-bob{transform-box:fill-box; transform-origin:50% 62%; animation:capBob 3.6s ease-in-out infinite}
-.cap-eye{transform-box:fill-box; transform-origin:center; animation:capBlink 4.8s ease-in-out infinite}
-.cap-ear-l{transform-box:fill-box; transform-origin:60% 90%; animation:capEarL 3.6s ease-in-out infinite}
-.cap-ear-r{transform-box:fill-box; transform-origin:40% 90%; animation:capEarR 3.6s ease-in-out infinite}
-@keyframes capBob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-1.4px) rotate(1.2deg)}}
-@keyframes capBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
-@keyframes capEarL{0%,100%{transform:rotate(0)}55%{transform:rotate(-7deg)}}
-@keyframes capEarR{0%,100%{transform:rotate(0)}55%{transform:rotate(7deg)}}
-@media (prefers-reduced-motion:reduce){.cap-bob,.cap-eye,.cap-ear-l,.cap-ear-r{animation:none}}
 .mk-brand span{font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint)}
 .mk-nav{display:flex; gap:2px; margin-left:6px}
 .mk-nav button{color:var(--ink-dim); background:none; border:none; font-family:var(--fb); font-weight:600; font-size:13.5px; padding:7px 12px; border-radius:11px; cursor:pointer; transition:.18s}
@@ -302,10 +290,13 @@
 .mk-field{width:100%; font-family:var(--fb); font-size:14px; color:var(--ink); padding:12px 14px; margin-bottom:10px; border-radius:13px; background:var(--glass); border:1px solid var(--stroke)}
 .mk-field::placeholder{color:var(--ink-faint)}
 .mk-field:focus-visible{outline:none; border-color:var(--impact)}
+select.mk-field{appearance:none; -webkit-appearance:none; cursor:pointer; padding-right:34px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; background-size:16px}
 .mk-amts{display:flex; gap:8px; margin-bottom:10px}
 .mk-amts .mk-chip{flex:1; text-align:center; font-family:var(--fd); font-weight:700; font-size:14px; color:var(--ink); justify-content:center; display:flex}
 .mk-amts .mk-chip.on{background:var(--impact); color:#043; border-color:transparent}
-.mk-wrow{display:flex; gap:10px} .mk-wrow .mk-field{flex:1; margin-bottom:0}
+.mk-wallet .mk-btn{width:100%}
 
 /* news */
 .mk-news{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px}
