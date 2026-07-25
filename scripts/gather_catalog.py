@@ -25,8 +25,12 @@ PILLARS: dict[str, str] = {
     "Food Security": "top hunger and food security charities nonprofits to donate",
     "Disaster Relief": "top disaster relief humanitarian charities nonprofits to donate",
     "Poverty Relief": "top poverty relief and cash transfer charities nonprofits to donate",
+    "Environment": "top environmental conservation and climate charities nonprofits to donate",
+    "Animals": "top animal welfare and wildlife conservation charities nonprofits to donate",
+    "Refugees": "top refugee and migrant aid charities nonprofits to donate",
+    "Mental Health": "top mental health support charities nonprofits to donate",
 }
-PER_PILLAR = 7
+PER_PILLAR = 12
 
 
 def _existing_domains() -> set[str]:

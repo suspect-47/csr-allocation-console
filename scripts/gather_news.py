@@ -16,7 +16,8 @@ from app import db
 from app.clients import youcom
 from app.clients.youcom import Freshness
 
-PILLARS = ["Clean Water", "Education", "Health", "Food Security", "Disaster Relief", "Poverty Relief"]
+PILLARS = ["Clean Water", "Education", "Health", "Food Security", "Disaster Relief",
+           "Poverty Relief", "Environment", "Animals", "Refugees", "Mental Health"]
 
 
 def yt_id(url: str) -> str | None:

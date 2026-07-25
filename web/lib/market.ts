@@ -115,7 +115,7 @@ export async function marketData() {
     .filter((c) => c.org_domain)
     .map((c) => ({ org_name: c.org_name, org_domain: c.org_domain!, logo_url: c.logo_url }))
     .filter((o, i, a) => a.findIndex((x) => x.org_domain === o.org_domain) === i)
-    .slice(0, 14);
+    .slice(0, 26);
 
   const newsRows = await q<{ source_title: string; source_url: string; excerpt: string; check_name: string; org_name: string }>(
     `select e.source_title, e.source_url, e.excerpt, e.check_name, c.org_name
