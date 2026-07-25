@@ -1,18 +1,22 @@
-# Render owns the runtime; Opsera owns the gate (spec §1, §7).
-# autoDeploy: false on EVERY service. Deploys happen only via the Render deploy
-# hook, called as the final Opsera stage. Nothing else provisions infra — do not
-# enable Opsera VIBEshift.
+# Render Blueprint for YourDues.
 #
-# web = Next.js (React UI + /api). worker + cron = Python (CrewAI flow).
+#   web    = Next.js (React UI + /api route handlers: read Postgres, enqueue,
+#            live you.com news search, OpenAI fund drafting)
+#   worker = Python verification pipeline (consumes csr:jobs, applies migrations)
+#   cron   = Python discovery enqueuer
+#
+# Secrets (you.com + OpenAI keys) live in the `csr-secrets` group with
+# sync:false — set their values once in the Render dashboard, never in git.
 
 services:
   - type: web
-    name: console
+    name: yourdues-web
     runtime: docker
     dockerfilePath: ./Dockerfile.web
-    autoDeploy: false
-    healthCheckPath: /healthz
+    autoDeploy: true
+    healthCheckPath: /api/healthz
     envVars:
+      - fromGroup: csr-secrets          # web needs YOU_SEARCH + OPENAI for search / AI-fund
       - key: DATABASE_URL
         fromDatabase:
           name: causes-db
@@ -24,14 +28,14 @@ services:
           property: connectionString
 
   - type: worker
-    name: flow-runner
+    name: yourdues-worker
     runtime: docker
     dockerfilePath: ./Dockerfile.worker
-    autoDeploy: false
+    autoDeploy: true
     dockerCommand: python -m app.worker
-    preDeployCommand: python -m scripts.migrate   # worker also migrates at startup (idempotent)
+    preDeployCommand: python -m scripts.migrate   # idempotent; worker also migrates at startup
     envVars:
-      - fromGroup: csr-secrets            # YOU_* + ANTHROPIC_API_KEY (dashboard only)
+      - fromGroup: csr-secrets
       - key: DATABASE_URL
         fromDatabase:
           name: causes-db
@@ -43,7 +47,7 @@ services:
           property: connectionString
 
   - type: cron
-    name: discovery
+    name: yourdues-discovery
     runtime: docker
     dockerfilePath: ./Dockerfile.worker
     schedule: "*/30 * * * *"
@@ -69,3 +73,25 @@ services:
 databases:
   - name: causes-db
     plan: free
+
+envVarGroups:
+  - name: csr-secrets
+    envVars:
+      # secrets — enter values in the Render dashboard (never committed)
+      - key: YOU_SEARCH_API_KEY
+        sync: false
+      - key: YOU_RESEARCH_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      # non-secret config (safe defaults, overridable)
+      - key: CREW_MODEL
+        value: openai/gpt-4o-mini
+      - key: YOU_SEARCH_BASE_URL
+        value: https://ydc-index.io
+      - key: YOU_RESEARCH_BASE_URL
+        value: https://api.you.com
+      - key: YOU_RESEARCH_EFFORT
+        value: standard
+      - key: MAX_CANDIDATES_PER_RUN
+        value: "6"
