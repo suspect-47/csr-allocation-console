@@ -13,12 +13,13 @@ export interface Patron {
   level_label: string;
   xp_into_level: number;
   xp_for_level: number;
+  avatar_url: string | null;
 }
 
 const LEVELS = ["Newcomer", "Backer", "Advocate", "Guardian", "Champion", "Patron", "Platinum"];
 const XP_PER_LEVEL = 2500;
 
-function decoratePatron(row: { id: string; name: string; impact_points: number; streak_days: number }): Patron {
+function decoratePatron(row: { id: string; name: string; impact_points: number; streak_days: number; avatar_url?: string | null }): Patron {
   const ip = row.impact_points;
   const level = Math.min(LEVELS.length, Math.floor(ip / XP_PER_LEVEL) + 1);
   return {
@@ -30,15 +31,16 @@ function decoratePatron(row: { id: string; name: string; impact_points: number; 
     level_label: LEVELS[Math.min(level - 1, LEVELS.length - 1)],
     xp_into_level: ip % XP_PER_LEVEL,
     xp_for_level: XP_PER_LEVEL,
+    avatar_url: row.avatar_url ?? null,
   };
 }
 
 export async function getOrCreatePatron(): Promise<Patron> {
-  let row = await one<{ id: string; name: string; impact_points: number; streak_days: number }>(
-    "select id, name, impact_points, streak_days from patrons order by created_at limit 1"
+  let row = await one<{ id: string; name: string; impact_points: number; streak_days: number; avatar_url: string | null }>(
+    "select id, name, impact_points, streak_days, avatar_url from patrons order by created_at limit 1"
   );
   if (!row) {
-    row = await one("insert into patrons (name) values ('You') returning id, name, impact_points, streak_days");
+    row = await one("insert into patrons (name) values ('You') returning id, name, impact_points, streak_days, avatar_url");
   }
   return decoratePatron(row!);
 }
@@ -129,13 +131,13 @@ export async function marketData() {
     .filter((n) => (seen.has(n.source_url) ? false : (seen.add(n.source_url), true)))
     .slice(0, 6);
 
-  const events = await q<{ id: string; title: string; pillar: string | null; geography: string | null; status: string; source_url: string | null }>(
-    "select id, title, pillar, geography, status, source_url from events order by created_at desc limit 6"
+  const events = await q<{ id: string; title: string; pillar: string | null; geography: string | null; status: string; source_url: string | null; image_url: string | null }>(
+    "select id, title, pillar, geography, status, source_url, image_url from events where image_url is not null order by created_at desc limit 6"
   );
 
   const patron = await getOrCreatePatron();
-  const leaderboard = (await q<{ id: string; name: string; impact_points: number; streak_days: number }>(
-    "select id, name, impact_points, streak_days from patrons order by impact_points desc limit 5"
+  const leaderboard = (await q<{ id: string; name: string; impact_points: number; streak_days: number; avatar_url: string | null }>(
+    "select id, name, impact_points, streak_days, avatar_url from patrons order by impact_points desc limit 5"
   )).map(decoratePatron);
 
   return { hero, cards, pillars, orgs, news, events, patron, leaderboard };
@@ -219,8 +221,8 @@ const sameUtcDay = (a: Date, b: Date) =>
 
 export async function pledge(causeId: string, amount: number): Promise<{ backers: number; patron: Patron; points: number }> {
   const patron = await getOrCreatePatron();
-  const cause = await one<{ id: string }>("select id from causes where id = $1 and status = 'cleared'", [causeId]);
-  if (!cause) throw new Error("cause not found or not cleared");
+  const cause = await one<{ id: string }>("select id from causes where id = $1 and status in ('cleared', 'listed')", [causeId]);
+  if (!cause) throw new Error("cause not found");
 
   await q("insert into pledges (cause_id, patron_id, amount) values ($1, $2, $3)", [causeId, patron.id, amount]);
 
@@ -230,10 +232,10 @@ export async function pledge(causeId: string, amount: number): Promise<{ backers
   const now = new Date();
   const bumpStreak = !last?.last_pledge_at || !sameUtcDay(new Date(last.last_pledge_at), now);
 
-  const updated = await one<{ id: string; name: string; impact_points: number; streak_days: number }>(
+  const updated = await one<{ id: string; name: string; impact_points: number; streak_days: number; avatar_url: string | null }>(
     `update patrons set impact_points = impact_points + $2,
             streak_days = streak_days + $3, last_pledge_at = now()
-     where id = $1 returning id, name, impact_points, streak_days`,
+     where id = $1 returning id, name, impact_points, streak_days, avatar_url`,
     [patron.id, points, bumpStreak ? 1 : 0]
   );
   const backersRow = await one<{ backers: number }>(

@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Capybara } from "@/components/Capybara";
 import "../../market.css";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -66,7 +65,7 @@ export default function CausePage() {
     <div className="mk">
       <div className="mk-wrap">
         <header className="mk-top mk-glass" style={{ marginBottom: 18 }}>
-          <Link href="/market" className="mk-brand"><span className="mk-logo"><Capybara size={24} /></span><span><b>YourDues</b><span className="eyebrow">Verified causes</span></span></Link>
+          <Link href="/market" className="mk-brand"><span><b>yourDues</b></span></Link>
           <div className="mk-spacer" />
           <Link href="/market" className="mk-chip">← Back to marketplace</Link>
         </header>

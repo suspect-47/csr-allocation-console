@@ -1,24 +1,55 @@
-// YourDues brand mark — a stylized capybara face (inline SVG, scalable).
+// YourDues brand mark — memoji-style capybara. Soft-shaded, rounded, with
+// idle motion (bob, blink, ear-twitch) driven by classes in market.css.
 export function Capybara({ size = 24 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      {/* ears */}
-      <ellipse cx="17" cy="18" rx="6.5" ry="7.5" fill="#8a5c34" />
-      <ellipse cx="47" cy="18" rx="6.5" ry="7.5" fill="#8a5c34" />
-      <ellipse cx="17" cy="19" rx="3" ry="3.6" fill="#5c3d22" />
-      <ellipse cx="47" cy="19" rx="3" ry="3.6" fill="#5c3d22" />
-      {/* head */}
-      <rect x="11" y="15" width="42" height="38" rx="18" fill="#b07d4f" />
-      <path d="M11 36 q0 17 21 17 q21 0 21-17" fill="#a06f43" opacity=".55" />
-      {/* eyes */}
-      <circle cx="23.5" cy="30" r="2.9" fill="#2e2016" />
-      <circle cx="40.5" cy="30" r="2.9" fill="#2e2016" />
-      <circle cx="24.4" cy="29.1" r=".9" fill="#fff" opacity=".85" />
-      <circle cx="41.4" cy="29.1" r=".9" fill="#fff" opacity=".85" />
-      {/* muzzle */}
-      <rect x="20" y="35" width="24" height="17" rx="8.5" fill="#8a6038" />
-      <ellipse cx="28.5" cy="42" rx="2.4" ry="1.9" fill="#2e2016" />
-      <ellipse cx="35.5" cy="42" rx="2.4" ry="1.9" fill="#2e2016" />
+      <defs>
+        <radialGradient id="capHead" cx="42%" cy="34%" r="72%">
+          <stop offset="0%" stopColor="#c99566" />
+          <stop offset="62%" stopColor="#ac7645" />
+          <stop offset="100%" stopColor="#8a5a32" />
+        </radialGradient>
+        <radialGradient id="capMuz" cx="50%" cy="30%" r="80%">
+          <stop offset="0%" stopColor="#b08356" />
+          <stop offset="100%" stopColor="#8c5f38" />
+        </radialGradient>
+        <radialGradient id="capEar" cx="50%" cy="35%" r="75%">
+          <stop offset="0%" stopColor="#97663c" />
+          <stop offset="100%" stopColor="#6d4526" />
+        </radialGradient>
+      </defs>
+      <g className="cap-bob">
+        {/* ears */}
+        <g className="cap-ear-l">
+          <ellipse cx="16" cy="17" rx="7.5" ry="8.5" fill="url(#capEar)" />
+          <ellipse cx="16" cy="18.5" rx="3.4" ry="4" fill="#502f18" opacity=".9" />
+        </g>
+        <g className="cap-ear-r">
+          <ellipse cx="48" cy="17" rx="7.5" ry="8.5" fill="url(#capEar)" />
+          <ellipse cx="48" cy="18.5" rx="3.4" ry="4" fill="#502f18" opacity=".9" />
+        </g>
+        {/* head */}
+        <rect x="9" y="13" width="46" height="42" rx="21" fill="url(#capHead)" />
+        {/* top gloss */}
+        <ellipse cx="26" cy="22" rx="13" ry="7" fill="#fff" opacity=".14" />
+        {/* cheek blush */}
+        <ellipse cx="18" cy="38" rx="4.5" ry="3" fill="#d98f6a" opacity=".38" />
+        <ellipse cx="46" cy="38" rx="4.5" ry="3" fill="#d98f6a" opacity=".38" />
+        {/* eyes */}
+        <g className="cap-eye cap-eye-l">
+          <circle cx="23" cy="30" r="3.6" fill="#221610" />
+          <circle cx="24.2" cy="28.7" r="1.2" fill="#fff" opacity=".9" />
+        </g>
+        <g className="cap-eye cap-eye-r">
+          <circle cx="41" cy="30" r="3.6" fill="#221610" />
+          <circle cx="42.2" cy="28.7" r="1.2" fill="#fff" opacity=".9" />
+        </g>
+        {/* muzzle */}
+        <rect x="19" y="35" width="26" height="18" rx="9" fill="url(#capMuz)" />
+        <ellipse cx="28" cy="42" rx="2.6" ry="2" fill="#241811" />
+        <ellipse cx="36" cy="42" rx="2.6" ry="2" fill="#241811" />
+        <path d="M29 48 q3 2.6 6 0" stroke="#241811" strokeWidth="1.4" strokeLinecap="round" fill="none" opacity=".7" />
+      </g>
     </svg>
   );
 }

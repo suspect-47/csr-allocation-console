@@ -13,7 +13,7 @@
   --fd:"Lexend","SF Pro Display","Segoe UI",system-ui,sans-serif;
   --fb:"Lexend","SF Pro Text",system-ui,sans-serif;
   --fm:"IBM Plex Mono","SF Mono",ui-monospace,monospace;
-  --fh:"Caveat","Gochi Hand",cursive;
+  --fh:"Pacifico","Caveat",cursive;
   color:var(--ink); font-family:var(--fb); font-size:15px; line-height:1.5;
   min-height:100vh; position:relative; overflow-x:hidden; -webkit-font-smoothing:antialiased;
   background:
@@ -48,10 +48,21 @@
 /* top bar */
 .mk-top{position:sticky; top:12px; z-index:40; display:flex; align-items:center; gap:16px; padding:12px 16px; margin-bottom:20px}
 .mk-brand{display:flex; align-items:center; gap:10px}
-.mk-logo{width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
-  background:#f4ecdc; box-shadow:0 6px 16px rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.55)}
-.mk-logo svg{display:block}
-.mk-brand b{font-family:var(--fh); font-weight:700; font-size:28px; letter-spacing:0; display:block; line-height:.82}
+.mk-logo{width:58px; height:58px; display:grid; place-items:center; background:none; border:none; box-shadow:none; margin:-6px 0}
+.mk-logo svg{display:block; filter:drop-shadow(0 4px 8px rgba(60,40,20,.22))}
+.mk-brand b{font-family:var(--fh); font-weight:400; font-size:26px; letter-spacing:.5px; display:block; line-height:1.18; color:#059669; padding-right:2px; text-transform:none}
+:root[data-theme="dark"] .mk .mk-brand b{color:#34d399}
+
+/* memoji capybara — idle motion */
+.cap-bob{transform-box:fill-box; transform-origin:50% 62%; animation:capBob 3.6s ease-in-out infinite}
+.cap-eye{transform-box:fill-box; transform-origin:center; animation:capBlink 4.8s ease-in-out infinite}
+.cap-ear-l{transform-box:fill-box; transform-origin:60% 90%; animation:capEarL 3.6s ease-in-out infinite}
+.cap-ear-r{transform-box:fill-box; transform-origin:40% 90%; animation:capEarR 3.6s ease-in-out infinite}
+@keyframes capBob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-1.4px) rotate(1.2deg)}}
+@keyframes capBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes capEarL{0%,100%{transform:rotate(0)}55%{transform:rotate(-7deg)}}
+@keyframes capEarR{0%,100%{transform:rotate(0)}55%{transform:rotate(7deg)}}
+@media (prefers-reduced-motion:reduce){.cap-bob,.cap-eye,.cap-ear-l,.cap-ear-r{animation:none}}
 .mk-brand span{font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint)}
 .mk-nav{display:flex; gap:2px; margin-left:6px}
 .mk-nav button{color:var(--ink-dim); background:none; border:none; font-family:var(--fb); font-weight:600; font-size:13.5px; padding:7px 12px; border-radius:11px; cursor:pointer; transition:.18s}
@@ -87,6 +98,13 @@
 /* grid */
 .mk-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); gap:18px; align-items:start}
 .mk-col{display:grid; gap:18px; min-width:0}
+/* funds grid scrolls within its own viewport-height window; wallet sits below */
+.mk-col--right{align-self:start; min-width:0}
+.mk-col--right .mk-rightinner{display:flex; flex-direction:column; gap:18px}
+.mk-col--right .mk-cards{max-height:calc(100vh - 208px); overflow-y:auto; align-content:start; padding:2px 10px 10px 2px; overscroll-behavior:contain}
+.mk-col--right .mk-cards::-webkit-scrollbar{width:9px}
+.mk-col--right .mk-cards::-webkit-scrollbar-thumb{background:var(--stroke); border-radius:999px; border:2px solid transparent; background-clip:padding-box}
+.mk-col--right .mk-cards:hover::-webkit-scrollbar-thumb{background:var(--ink-faint); background-clip:padding-box}
 
 /* hero */
 .mk-hero{padding:0; overflow:hidden}
@@ -150,7 +168,7 @@
 .mk-bold-stat small{display:block; font-size:9.5px; text-transform:uppercase; letter-spacing:.09em; opacity:.72; margin-top:3px}
 .mk-fund--solid{background:rgba(255,255,255,.92); color:#08251b; border:none}
 .mk-fund--solid:hover{background:#fff; color:#065f46}
-.mk-cart{aspect-ratio:1/.82; padding:10px; display:flex; flex-direction:column; justify-content:space-between; position:relative}
+.mk-cart{aspect-ratio:16/11; padding:10px; display:flex; flex-direction:column; justify-content:space-between; position:relative}
 .mk-cart .nm{font-family:var(--fd); font-weight:800; font-size:16px; color:#fff; letter-spacing:-.02em; text-shadow:0 2px 16px rgba(0,0,0,.4)}
 .mk-rar{position:absolute; inset:0; border-radius:var(--r) var(--r) 0 0; pointer-events:none; border:1.5px solid transparent}
 .mk-card.leg .mk-rar{border-color:rgba(255,194,75,.75); box-shadow:inset 0 0 34px rgba(255,194,75,.28)}
@@ -209,7 +227,10 @@
 .mk-art > div:not(.mk-art-shade){position:relative; z-index:2}
 .mk-art-logo{width:44px; height:44px; border-radius:12px; object-fit:cover; background:#fff; padding:5px; box-shadow:0 6px 18px rgba(0,0,0,.4); margin-bottom:10px; display:block}
 .mk-org .av{overflow:hidden}
-.mk-org .av img{width:100%; height:100%; object-fit:cover; background:#fff}
+.mk-org .av img{width:100%; height:100%; object-fit:contain; background:none}
+.mk-org .av.has-logo{background:none!important; border:none; box-shadow:none; border-radius:0; overflow:visible}
+.mk-org .av.has-logo img{mix-blend-mode:multiply}
+:root[data-theme="dark"] .mk-org .av.has-logo img{mix-blend-mode:normal}
 
 .mk-sechead{display:flex; align-items:center; justify-content:space-between; margin:2px 2px 0; gap:10px}
 .mk-sechead h2{font-size:17px; display:flex; align-items:center; gap:9px}
@@ -245,16 +266,18 @@
 .mk-orgstrip-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 2px 10px}
 .mk-orgstrip-head h2{font-size:17px}
 .mk-orgs{display:flex; gap:13px; overflow-x:auto; padding:11px}
-.mk-org{flex:0 0 auto; width:54px; text-align:center; cursor:pointer}
-.mk-org .av{width:46px; height:46px; border-radius:14px; display:grid; place-items:center; font-family:var(--fd); font-weight:800; font-size:15px; color:#fff; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.25)}
+.mk-org{flex:0 0 auto; width:62px; text-align:center; cursor:pointer}
+.mk-org .av{width:54px; height:54px; border-radius:15px; display:grid; place-items:center; font-family:var(--fd); font-weight:800; font-size:17px; color:#fff; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.25)}
 .mk-org small{display:block; font-size:10px; color:var(--ink-dim); margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 
 /* events + leaderboard rows */
 .mk-list{padding:16px}
-.mk-ev{display:flex; align-items:center; gap:12px; padding:10px 6px; border-bottom:1px solid var(--stroke)}
+.mk-ev{display:flex; align-items:center; gap:12px; padding:10px 6px; border-bottom:1px solid var(--stroke); text-decoration:none; color:inherit; transition:background .15s}
 .mk-ev:last-child{border-bottom:none}
-.mk-ev .ic{width:40px; height:40px; border-radius:12px; display:grid; place-items:center; flex:0 0 auto; background:var(--glass-2); border:1px solid var(--stroke)}
+.mk-ev:hover{background:var(--glass-2); border-radius:12px}
+.mk-ev .ic{width:48px; height:48px; border-radius:12px; display:grid; place-items:center; flex:0 0 auto; background:var(--glass-2); border:1px solid var(--stroke); overflow:hidden}
 .mk-ev .ic svg{width:19px;height:19px}
+.mk-ev .ic img{width:100%; height:100%; object-fit:cover}
 .mk-ev .ttl{font-family:var(--fd); font-weight:700; font-size:13.5px}
 .mk-ev .sub{font-family:var(--fm); font-size:11px; color:var(--ink-dim)}
 .mk-ev .st{margin-left:auto; font-family:var(--fm); font-size:11px; font-weight:700; padding:4px 9px; border-radius:999px; white-space:nowrap}
@@ -266,7 +289,9 @@
 .mk-lbrow.me{background:linear-gradient(90deg,rgba(53,227,194,.14),transparent); border-radius:12px; border-bottom:1px solid transparent}
 .mk-rank{font-family:var(--fd); font-weight:800; font-size:15px; width:20px; color:var(--ink-dim)}
 .mk-rank.g{color:var(--gold)}
-.mk-lbrow .av{width:34px;height:34px;border-radius:11px; display:grid;place-items:center; font-family:var(--fd);font-weight:800;font-size:12px;color:#fff}
+.mk-lbrow .av{width:34px;height:34px;border-radius:11px; display:grid;place-items:center; font-family:var(--fd);font-weight:800;font-size:12px;color:#fff; flex:0 0 auto; overflow:hidden}
+.mk-lbrow .av.lb-photo{background:var(--glass-2)}
+.mk-lbrow .av.lb-photo img{width:100%;height:100%;object-fit:cover}
 .mk-lbrow .nm{font-family:var(--fd); font-weight:700; font-size:13.5px} .mk-lbrow .tier{font-family:var(--fm); font-size:10.5px; color:var(--ink-dim)}
 .mk-lbrow .ip{margin-left:auto; font-family:var(--fm); font-weight:800; color:var(--gold)}
 
@@ -303,6 +328,39 @@
 /* news page */
 .mk-newsmeta{font-family:var(--fm); font-size:11px; color:var(--impact); display:flex; align-items:center; gap:7px; margin-bottom:8px}
 .mk-newsmeta .dot{width:7px; height:7px; border-radius:50%; background:var(--impact); flex:0 0 auto}
+
+/* source + category badges */
+.mk-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:9px}
+.mk-badge{display:inline-flex; align-items:center; gap:6px; font-family:var(--fb); font-weight:600; font-size:11px; line-height:1; padding:5px 9px; border-radius:8px; border:1px solid var(--stroke); background:var(--glass); color:var(--ink-dim); white-space:nowrap}
+.mk-badge--src{padding-left:5px; color:var(--ink); background:var(--glass-2)}
+.mk-badge-logo{width:16px; height:16px; border-radius:4px; object-fit:cover; flex:0 0 auto; background:#fff}
+.mk-badge--cat{border:none; cursor:default; color:var(--tone,#10b981); background:color-mix(in srgb, var(--tone,#10b981) 15%, transparent)}
+button.mk-badge--cat{cursor:pointer; transition:background .15s}
+button.mk-badge--cat:hover{background:color-mix(in srgb, var(--tone,#10b981) 26%, transparent)}
+.mk-badge--date{font-family:var(--fm); font-size:10.5px; color:var(--ink-faint); background:none; border:none; padding:0 2px}
+
+/* category filter row */
+.mk-catfilter{display:flex; align-items:center; gap:12px; flex-wrap:nowrap; min-width:0}
+.mk-catfilter .mk-fchips{flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding-bottom:2px; -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent); mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent)}
+.mk-catfilter .mk-fchips::-webkit-scrollbar{display:none}
+.mk-catfilter .mk-fchips button{flex:0 0 auto}
+.mk-catlabel{display:inline-flex; align-items:center; gap:6px; font-family:var(--fd); font-weight:700; font-size:13px; color:var(--ink-dim); flex:0 0 auto}
+.mk-catlabel svg{width:16px; height:16px}
+.mk-catdot{width:8px; height:8px; border-radius:50%; background:var(--tone,#10b981); flex:0 0 auto}
+.mk-fchips button.on .mk-catdot{background:#043}
+.mk-newshead{display:flex; align-items:center; gap:14px; margin-bottom:16px; flex-wrap:wrap}
+.mk-newshead h1{font-size:26px; flex:0 0 auto}
+.mk-newssearch{flex:1; min-width:240px; display:flex; align-items:center; gap:8px; padding:5px 6px 5px 14px; border-radius:14px; background:var(--glass); border:1px solid var(--stroke); backdrop-filter:blur(20px)}
+.mk-newssearch:focus-within{border-color:var(--accent)}
+.mk-newssearch svg{width:18px; height:18px; color:var(--ink-faint); flex:0 0 auto}
+.mk-newssearch input{flex:1; min-width:0; border:none; background:none; font-family:var(--fb); font-size:14px; color:var(--ink); padding:7px 0}
+.mk-newssearch input:focus-visible{outline:none}
+.mk-search-clear{border:none; background:none; color:var(--ink-faint); cursor:pointer; font-size:14px; padding:4px 6px}
+.mk-search-go{border:none; background:var(--accent); color:#fff; font-family:var(--fd); font-weight:700; font-size:13px; padding:8px 16px; border-radius:10px; cursor:pointer; flex:0 0 auto}
+.mk-search-go:hover{filter:brightness(1.06)}
+.mk-news-actions{display:flex; align-items:center; gap:8px; margin-top:auto; padding-top:12px}
+.mk-news-actions .mk-fund{flex:1; text-align:center; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:5px}
+.mk-fund--big{padding:11px 20px; font-size:14px; margin-top:14px; align-self:flex-start; text-decoration:none; display:inline-flex; align-items:center; gap:6px}
 .mk-newshero{display:grid; grid-template-columns:1.25fr 1fr; overflow:hidden; padding:0; text-decoration:none; margin-bottom:8px}
 .mk-newshero-img{position:relative; overflow:hidden; min-height:280px}
 .mk-newshero-img img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
@@ -342,5 +400,8 @@
 .mk-rel{padding:0; overflow:hidden; display:block; text-decoration:none}
 .mk-rel-art{position:relative; overflow:hidden; aspect-ratio:3/2; display:flex; align-items:flex-end; padding:10px}
 
-@media (max-width:900px){ .mk-grid{grid-template-columns:1fr} .mk-two{grid-template-columns:1fr} .mk-nav{display:none} }
+@media (max-width:900px){
+  .mk-grid{grid-template-columns:1fr} .mk-two{grid-template-columns:1fr} .mk-nav{display:none}
+  .mk-col--right .mk-cards{max-height:none; overflow:visible}
+}
 @media (prefers-reduced-motion:reduce){ .mk *{animation:none!important} }

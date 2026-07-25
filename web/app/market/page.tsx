@@ -3,7 +3,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
-import { Capybara } from "@/components/Capybara";
 import "./market.css";
 
 // ---- types (mirror lib/market.ts) ----
@@ -16,14 +15,14 @@ interface Card {
   backers: number; raised: number; impact: Impact | null;
   image_url: string | null; logo_url: string | null; blurb: string | null; created_at: string;
 }
-interface Patron { id: string; name: string; impact_points: number; streak_days: number; level: number; level_label: string; xp_into_level: number; xp_for_level: number }
+interface Patron { id: string; name: string; impact_points: number; streak_days: number; level: number; level_label: string; xp_into_level: number; xp_for_level: number; avatar_url: string | null }
 interface News { source_title: string; source_url: string; excerpt: string; check_name: string; org_name: string }
-interface Ev { id: string; title: string; pillar: string | null; geography: string | null; status: string; source_url: string | null }
+interface Ev { id: string; title: string; pillar: string | null; geography: string | null; status: string; source_url: string | null; image_url: string | null }
 interface Org { org_name: string; org_domain: string; logo_url: string | null }
 interface Market { hero: Card | null; cards: Card[]; pillars: { pillar: string; count: number }[]; orgs: Org[]; news: News[]; events: Ev[]; patron: Patron; leaderboard: Patron[] }
 function imgErr(e: { currentTarget: HTMLImageElement }) { e.currentTarget.style.display = "none"; }
 
-const TABS = ["Causes", "Events", "News", "Leaderboard"];
+const TABS = ["Causes", "Events", "News"];
 const SORTS: { key: string; label: string }[] = [
   { key: "trending", label: "Trending" },
   { key: "backed", label: "Most backed" },
@@ -143,8 +142,7 @@ export default function Market() {
         {/* TOP BAR */}
         <motion.header className="mk-top mk-glass" {...(reduce ? {} : { initial: { opacity: 0, y: -10 }, animate: { opacity: 1, y: 0 } })}>
           <Link href="/market" className="mk-brand">
-            <span className="mk-logo"><Capybara size={24} /></span>
-            <span><b>YourDues</b><span className="eyebrow">Verified causes</span></span>
+            <span><b>yourDues</b></span>
           </Link>
           <nav className="mk-nav">
             {TABS.map((t) => (
@@ -185,7 +183,7 @@ export default function Market() {
             <div className="mk-orgs mk-glass">
               {m.orgs.map((o) => (
                 <a className="mk-org" key={o.org_domain} href={`https://${o.org_domain}`} target="_blank" rel="noreferrer" title={o.org_name}>
-                  <div className="av" style={{ background: grad(o.org_name) }}>
+                  <div className={o.logo_url ? "av has-logo" : "av"} style={o.logo_url ? undefined : { background: grad(o.org_name) }}>
                     {o.logo_url ? <img src={o.logo_url} alt="" onError={imgErr} /> : initials(o.org_name)}
                   </div>
                   <small>{o.org_name}</small>
@@ -222,11 +220,15 @@ export default function Market() {
             <section id="sec-events" className="mk-list mk-glass">
               <div className="mk-sechead" style={{ marginBottom: 6 }}><h2>📅 Live events</h2><span className="mk-chip">All</span></div>
               {m.events.length ? m.events.map((e) => (
-                <div className="mk-ev" key={e.id}>
-                  <div className="ic"><svg viewBox="0 0 24 24" fill="none">{PILLAR_ICON[pillarKey(e.pillar || "")]}</svg></div>
+                <a className="mk-ev" key={e.id} href={e.source_url || "#"} target="_blank" rel="noreferrer">
+                  <div className="ic">
+                    {e.image_url
+                      ? <img src={e.image_url} alt="" loading="lazy" onError={imgErr} />
+                      : <svg viewBox="0 0 24 24" fill="none">{PILLAR_ICON[pillarKey(e.pillar || "")]}</svg>}
+                  </div>
                   <div><div className="ttl">{e.title}</div><div className="sub">{[e.pillar, e.geography].filter(Boolean).join(" · ")}</div></div>
                   <span className={`st ${e.status}`}>{e.status === "live" ? "● Live" : e.status}</span>
-                </div>
+                </a>
               )) : <div className="mk-empty" style={{ padding: 20 }}>No events gathered yet.</div>}
             </section>
 
@@ -236,7 +238,9 @@ export default function Market() {
               {m.leaderboard.map((p, i) => (
                 <div className={`mk-lbrow ${p.id === patron.id ? "me" : ""}`} key={p.id}>
                   <span className={`mk-rank ${i === 0 ? "g" : ""}`}>{i + 1}</span>
-                  <div className="av" style={{ background: grad(p.name) }}>{initials(p.name)}</div>
+                  {p.avatar_url
+                    ? <div className="av lb-photo"><img src={p.avatar_url} alt="" loading="lazy" onError={imgErr} /></div>
+                    : <div className="av" style={{ background: grad(p.name) }}>{initials(p.name)}</div>}
                   <div><div className="nm">{p.id === patron.id ? "You" : p.name}</div><div className="tier">{p.level_label} · 🔥 {p.streak_days}</div></div>
                   <span className="ip num">{fmt(p.impact_points)}</span>
                 </div>
@@ -244,15 +248,15 @@ export default function Market() {
             </section>
           </div>
 
-          {/* RIGHT */}
-          <div className="mk-col">
+          {/* RIGHT — scrolls within, page ends at left-column height */}
+          <div className="mk-col mk-col--right">
+           <div className="mk-rightinner">
             <motion.div className="mk-cards" layout={!reduce}>
               <AnimatePresence>
                 {shown.map((c, i) => <CauseCard key={c.id} c={c} i={i} reduce={reduce} onFund={fund} />)}
                 {shown.length === 0 && <div className="mk-empty" style={{ gridColumn: "1/-1" }}>No causes in this pillar.</div>}
               </AnimatePresence>
             </motion.div>
-
 
             {/* WALLET */}
             <section className="mk-wallet mk-glass">
@@ -269,6 +273,7 @@ export default function Market() {
                 <button className="mk-btn" style={{ flex: "0 0 auto" }} disabled={!hero} onClick={() => hero && fund(hero, amount)}>Pledge {money(amount)}</button>
               </div>
             </section>
+           </div>
           </div>
         </div>
 
